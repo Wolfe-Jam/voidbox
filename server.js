@@ -12,8 +12,8 @@ const port = process.env.PORT || 3002;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // Serve files from public directory
-app.use(express.static('src')); // Serve files from src directory
+app.use(express.static(join(__dirname, 'public'))); // Absolute path for public
+app.use(express.static(join(__dirname, 'src'))); // Absolute path for src
 
 // Routes
 app.get('/api/health', (req, res) => {
@@ -23,7 +23,6 @@ app.get('/api/health', (req, res) => {
 // Handle contact form submissions
 app.post('/api/contact', (req, res) => {
     const { name, email, message } = req.body;
-    // Here you would typically integrate with an email service or database
     console.log('Contact form submission:', { name, email, message });
     res.json({ success: true, message: 'Message received!' });
 });
@@ -33,7 +32,12 @@ app.get('*', (req, res) => {
     res.sendFile(join(__dirname, 'index.html'));
 });
 
-// Start server
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-});
+// Export for Vercel
+export default app;
+
+// Only start server in development
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+    });
+}
