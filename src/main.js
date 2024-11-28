@@ -1,19 +1,24 @@
+import { VoidboxCore } from './core.js';
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Constants
+    const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw';
+
+    // Initialize core
+    const voidbox = new VoidboxCore(MAKE_WEBHOOK_URL);
+
     // Cache DOM elements
-    const form = document.getElementById('promptForm');
-    const promptInput = document.getElementById('prompt');
-    const imageDisplay = document.getElementById('imageDisplay');
-    const generatedImage = document.getElementById('generatedImage');
-    const loadingState = document.getElementById('loadingState');
+    const form = document.querySelector('form');
+    const promptInput = document.querySelector('#prompt');
+    const generatedImage = document.querySelector('#generatedImage');
+    const imageDisplay = document.querySelector('#imageDisplay');
+    const loadingState = document.querySelector('#loadingState');
     const viewFullImageBtn = document.getElementById('viewFullImage');
     const downloadImageBtn = document.getElementById('downloadImage');
     const emailButton = document.getElementById('emailButton');
     const emailForm = document.getElementById('emailForm');
     const emailInput = document.getElementById('emailInput');
     const sendEmailButton = document.getElementById('sendEmailButton');
-
-    // Make.com webhook URL - Image Generation Scenario
-    const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw';
 
     // View full image handler
     if (viewFullImageBtn) {
@@ -68,38 +73,24 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const prompt = promptInput.value.trim();
-        if (!prompt) return;
-
         try {
             // Show loading state
             loadingState.classList.remove('hidden');
             imageDisplay.classList.add('hidden');
             
-            // Send request to Make.com webhook
-            const response = await fetch(MAKE_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            });
-
-            // Get the URL directly from response
-            const imageUrl = await response.text();
-            console.log('Make.com returned URL:', imageUrl);
-
-            // Set image source and show it
+            // Generate image using core
+            const imageUrl = await voidbox.generateImage(promptInput.value);
+            
+            // Display image
             generatedImage.src = imageUrl;
             generatedImage.onload = () => {
                 imageDisplay.classList.remove('hidden');
                 loadingState.classList.add('hidden');
             };
-            generatedImage.onerror = () => {
-                throw new Error('Failed to load image from URL');
-            };
             
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to generate image. Please try again.');
+            alert(error.message || 'Failed to generate image. Please try again.');
             loadingState.classList.add('hidden');
         }
     });
