@@ -10,29 +10,34 @@
       "use": "@vercel/static"
     },
     {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
       "src": "src/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/icon.svg",
+      "dest": "/public/icon.svg"
+    },
+    {
+      "src": "/main.js",
+      "dest": "/src/main.js"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "dest": "/public/apple-touch-icon.png"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "server.js"
     },
     {
-      "src": "/process-image",
-      "dest": "server.js"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "server.js"
     }
   ]
 }
