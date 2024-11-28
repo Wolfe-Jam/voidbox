@@ -75,44 +75,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show loading state
             loadingState.classList.remove('hidden');
             imageDisplay.classList.add('hidden');
-
-            console.log('Sending request to Make.com...');
             
             // Send request to Make.com webhook
             const response = await fetch(MAKE_WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Origin': window.location.origin
-                },
-                body: JSON.stringify({ 
-                    prompt: prompt,
-                    type: 'image'
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response headers:', Object.fromEntries(response.headers));
-
-            if (!response.ok) {
-                throw new Error(`Failed to generate image: ${response.status}`);
-            }
-
+            // Get the URL directly from response
             const imageUrl = await response.text();
-            console.log('Received image URL:', imageUrl);
-            
-            if (imageUrl && imageUrl.startsWith('http')) {
-                generatedImage.src = imageUrl;
+            console.log('Make.com returned URL:', imageUrl);
+
+            // Set image source and show it
+            generatedImage.src = imageUrl;
+            generatedImage.onload = () => {
                 imageDisplay.classList.remove('hidden');
-                emailForm.classList.add('hidden');
-                console.log('Image displayed successfully');
-            } else {
-                throw new Error('Invalid image URL in response');
-            }
+                loadingState.classList.add('hidden');
+            };
+            generatedImage.onerror = () => {
+                throw new Error('Failed to load image from URL');
+            };
+            
         } catch (error) {
-            console.error('Error details:', error);
-            alert('Failed to generate image. Please try again. Check console for details.');
-        } finally {
+            console.error('Error:', error);
+            alert('Failed to generate image. Please try again.');
             loadingState.classList.add('hidden');
         }
     });
