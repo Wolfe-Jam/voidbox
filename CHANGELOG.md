@@ -22,3 +22,22 @@ All notable changes to the Voidbox project will be documented in this file.
 - Error handling
 - Mobile-optimized animations
 - Responsive design implementation
+
+## [0.1.1-beta.1] - 2024-01-17
+
+### Recovery & Fixes
+- Recovered project from backup after data management incident
+- Fixed static file serving paths
+- Corrected asset loading in index.html
+- Established comprehensive version control procedures
+- Added detailed recovery documentation
+
+### Added
+- VERSION_CONTROL.md with detailed procedures
+- Enhanced backup procedures
+- Improved development workflow documentation
+
+### Technical
+- Configured nodemon for development
+- Added npm scripts for server management
+- Improved static file organization
