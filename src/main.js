@@ -76,32 +76,42 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingState.classList.remove('hidden');
             imageDisplay.classList.add('hidden');
 
+            console.log('Sending request to Make.com...');
+            
             // Send request to Make.com webhook
             const response = await fetch(MAKE_WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Origin': window.location.origin
+                },
                 body: JSON.stringify({ 
                     prompt: prompt,
                     type: 'image'
                 })
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers));
+
             if (!response.ok) {
                 throw new Error(`Failed to generate image: ${response.status}`);
             }
 
             const imageUrl = await response.text();
+            console.log('Received image URL:', imageUrl);
             
             if (imageUrl && imageUrl.startsWith('http')) {
                 generatedImage.src = imageUrl;
                 imageDisplay.classList.remove('hidden');
                 emailForm.classList.add('hidden');
+                console.log('Image displayed successfully');
             } else {
                 throw new Error('Invalid image URL in response');
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to generate image. Please try again.');
+            console.error('Error details:', error);
+            alert('Failed to generate image. Please try again. Check console for details.');
         } finally {
             loadingState.classList.add('hidden');
         }
