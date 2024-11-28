@@ -50,7 +50,7 @@ class ImageGenerationStrategy {
 }
 
 /**
- * Strategy for zero-background image generation
+ * Strategy for zero-background image generation (Thread 1)
  */
 class ZeroBackgroundStrategy extends ImageGenerationStrategy {
     async generate(prompt, options = {}) {
@@ -58,6 +58,36 @@ class ZeroBackgroundStrategy extends ImageGenerationStrategy {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt, type: 'zero-background', ...options })
+        });
+
+        if (!response.ok) {
+            throw new VoidboxError(
+                `Server responded with ${response.status}`,
+                'API_ERROR'
+            );
+        }
+
+        const imageUrl = await response.text();
+        if (!VoidboxCore.isValidUrl(imageUrl)) {
+            throw new VoidboxError(
+                'Received invalid image URL from server',
+                'INVALID_RESPONSE'
+            );
+        }
+
+        return imageUrl;
+    }
+}
+
+/**
+ * Strategy for regular image generation with background (Thread 2)
+ */
+class WithBackgroundStrategy extends ImageGenerationStrategy {
+    async generate(prompt, options = {}) {
+        const response = await fetch(this.webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, type: 'with-background', ...options })
         });
 
         if (!response.ok) {
@@ -96,6 +126,12 @@ class VoidboxCore {
             this.registerStrategy(
                 'zero-background',
                 new ZeroBackgroundStrategy(config.webhookUrls['zero-background'])
+            );
+        }
+        if (config.webhookUrls?.['with-background']) {
+            this.registerStrategy(
+                'with-background',
+                new WithBackgroundStrategy(config.webhookUrls['with-background'])
             );
         }
     }
@@ -214,4 +250,4 @@ class VoidboxCore {
 }
 
 // Export as ES module
-export { VoidboxCore, VoidboxError, ImageGenerationStrategy };
+export { VoidboxCore, VoidboxError, ImageGenerationStrategy, ZeroBackgroundStrategy, WithBackgroundStrategy };

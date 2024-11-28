@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com/3.3.5"></script>
-    <script src="/main.js" defer></script>
+    <script src="main.js" type="module" defer></script>
     <style>
         /* Mobile-first base styles */
         body {
@@ -100,176 +100,17 @@
                 box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
             }
             40% { 
-                background: black;
-                box-shadow: none;
-            }
-            60% { 
                 background: #00ff00;
                 box-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00;
             }
-            80% { 
-                background: black;
-                box-shadow: none;
-            }
-            90% {
+            60% { 
                 background: #0000ff;
                 box-shadow: 0 0 15px #0000ff, 0 0 30px #0000ff;
             }
-        }
-
-        /* Enhanced shadow effect */
-        .cube::after {
-            content: '';
-            position: absolute;
-            bottom: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 16px;
-            height: 2px;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 50%;
-            filter: blur(1px);
-            animation: shadowPulse 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-        }
-
-        @keyframes shadowPulse {
-            0%, 100% { 
-                transform: translateX(-50%) scale(1);
-                opacity: 0.15;
+            80% { 
+                background: #ff00ff;
+                box-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff;
             }
-            20%, 60%, 90% { 
-                transform: translateX(-50%) scale(1.5);
-                opacity: 0.08;
-            }
-            40%, 80% { 
-                transform: translateX(-50%) scale(1);
-                opacity: 0.15;
-            }
-        }
-
-        .dropdown-toggle {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            letter-spacing: -0.01em;
-            font-size: 1rem;
-            color: #4B5563; /* text-gray-600 */
-        }
-        .dropdown-toggle:hover {
-            color: #111827; /* text-gray-900 */
-        }
-
-        /* Style additions */
-        .required-category {
-            color: #111827; /* text-gray-900 */
-            font-weight: 600;
-        }
-
-        /* Delete button styles */
-        .delete-btn {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(4px);
-            z-index: 10;
-        }
-        
-        .delete-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.05);
-        }
-
-        .delete-btn.confirm {
-            width: auto;
-            padding: 0 20px;
-            border-radius: 22px;
-            background: rgba(239, 68, 68, 0.9);
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .delete-btn.confirm:hover {
-            background: rgba(220, 38, 38, 1);
-        }
-
-        .image-container {
-            position: relative;
-            width: 100%;
-        }
-
-        /* Action buttons */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-
-        .action-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-        }
-
-        .action-btn:hover {
-            background: #e5e7eb;
-            transform: translateY(-1px);
-        }
-
-        .action-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Email form */
-        .email-form {
-            margin-top: 12px;
-            display: none;
-        }
-
-        .email-form.show {
-            display: flex;
-            gap: 8px;
-        }
-
-        .email-form input {
-            flex: 1;
-            min-width: 0;
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .email-form button {
-            padding: 8px 16px;
-            background: #000;
-            color: white;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .email-form button:hover {
-            background: #1a1a1a;
         }
     </style>
 </head>
@@ -281,33 +122,18 @@
             <div class="logo-container">
                 <img src="/icon.svg" alt="voidbox" class="logo-svg">
             </div>
-            <div class="relative">
-                <button 
-                    id="zbgInfoToggle" 
-                    class="dropdown-toggle inline-flex items-center gap-1 transition-colors"
-                >
-                    ZBG your Image
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-                <!-- ZBG Info dropdown -->
-                <div id="zbgInfo" class="hidden mt-4 p-4 bg-white rounded-lg shadow-lg text-left max-w-lg mx-auto">
-                    <h3 class="font-bold text-lg mb-3">Zero Background Image Generation</h3>
-                    <p class="mb-4">The VOID Box automatically generates an image without a background, from a simple prompt</p>
-                    <div class="mt-2">
-                        <h4 class="font-bold mb-2">No Background Needed:</h4>
-                        <p>There's no need to include phrases like "no background" or "transparent background" in your prompts. The VOID Box outputs a ZBG (Zero BackGround) image from your prompt</p>
-                    </div>
-                </div>
-            </div>
         </header>
 
         <!-- Main content -->
         <main class="max-w-2xl mx-auto">
             <!-- Form section -->
             <div class="mt-8">
-                <form id="promptForm" class="space-y-6 flex flex-col items-center">
+                <form id="promptForm" class="w-full max-w-xl mx-auto px-4 space-y-6 flex flex-col items-center">
+                    <!-- Image type selector -->
+                    <div id="imageTypeContainer" class="mb-4 space-y-2">
+                        <!-- Radio buttons will be inserted here by JavaScript -->
+                    </div>
+                    
                     <!-- Prompt input -->
                     <div class="w-full">
                         <p class="text-sm text-gray-500 mb-2 px-1">Enter your prompt, try our format below</p>
@@ -317,8 +143,8 @@
                             name="prompt"
                             required
                             list="promptHistory"
-                            placeholder="black cat with green eyes laughing in a top hat. cartoon, bright colors"
-                            class="w-full p-4 text-mobile-input border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent mb-3"
+                            placeholder="black cat with green eyes laughing in a top hat. cartoon, bright colors, funny"
+                            class="w-full p-4 text-mobile-input border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent mb-3 placeholder:text-gray-400 focus:placeholder:text-black focus:placeholder:font-medium"
                             autocomplete="off"
                         >
                         <datalist id="promptHistory"></datalist>
@@ -353,51 +179,18 @@
                     </button>
                 </div>
 
-                <!-- ZBG toggle -->
-                <div class="text-center">
-                    <button 
-                        id="zbgToggle" 
-                        class="dropdown-toggle inline-flex items-center gap-1 transition-colors"
-                    >
-                        What is ZBG?
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- ZBG Info (hidden by default) -->
-                <div id="zbgInfo" class="hidden mt-6 p-4 bg-white rounded-lg shadow-lg">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-medium">Zero Background Generation (ZBG)</h3>
-                        <button id="closeZbg" class="text-gray-500 hover:text-gray-700">×</button>
-                    </div>
-                    <div class="space-y-3 text-sm">
-                        <p>ZBG creates images with a completely transparent background, perfect for:</p>
-                        <ul class="list-disc pl-5 space-y-1">
-                            <li>Logos and branding</li>
-                            <li>Product mockups</li>
-                            <li>Social media content</li>
-                            <li>Digital art and stickers</li>
-                        </ul>
-                        <p class="text-gray-600 italic">Pro tip: Use clear subject descriptions for best results!</p>
-                    </div>
-                </div>
-
-                <!-- Prompt tips (hidden by default) -->
+                <!-- Prompt tips content -->
                 <div id="promptTips" class="hidden mt-6 p-4 bg-white rounded-lg shadow-lg">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-medium">Prompt Tips</h3>
                         <button id="closeTips" class="text-gray-500 hover:text-gray-700">×</button>
                     </div>
-                    <ul class="space-y-2 text-sm">
-                        <li class="prompt-tip required-category" data-tooltip="Example: 'black cat'">🎯 Subject - What's the main focus?</li>
-                        <li class="prompt-tip required-category" data-tooltip="Example: 'green eyes'">📝 Description - Add key details</li>
-                        <li class="prompt-tip" data-tooltip="Example: 'laughing'">🎬 Activity - What is it doing?</li>
-                        <li class="prompt-tip" data-tooltip="Example: 'top hat'">🎭 Props - Add accessories or items</li>
-                        <li class="prompt-tip required-category" data-tooltip="Example: 'cartoon'">🎨 Style - Choose artistic style</li>
-                        <li class="prompt-tip" data-tooltip="Example: 'bright colors'">🌈 Color - Specify color scheme</li>
-                        <li class="prompt-tip" data-tooltip="Example: 'playful, whimsical'">✨ Vibe - Set the mood</li>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>• Start with the main subject (e.g., "cat", "landscape", "portrait")</li>
+                        <li>• Add key details (e.g., "black fur", "snowy mountains", "young woman")</li>
+                        <li>• Include action or mood (e.g., "jumping", "peaceful", "dramatic")</li>
+                        <li>• Specify style (e.g., "cartoon", "realistic", "watercolor")</li>
+                        <li>• Add color preferences (e.g., "vibrant", "pastel", "monochrome")</li>
                     </ul>
                 </div>
             </div>
@@ -414,46 +207,40 @@
                         <div class="cube-face bottom"></div>
                     </div>
                 </div>
-                <p class="mt-4 text-sm text-gray-600">Generating your design...</p>
+                <p class="mt-4 text-sm">Generating your image...</p>
             </div>
 
             <!-- Image display -->
-            <div id="imageDisplay" class="mt-8 hidden">
-                <div class="image-container relative">
-                    <img id="generatedImage" class="w-full rounded-lg shadow-lg" alt="Generated image">
-                    <div class="mt-4 flex justify-center gap-4">
-                        <button id="viewFullImage" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors">
-                            View Full Image
-                        </button>
-                        <button id="downloadImage" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                            </svg>
-                        </button>
-                        <button id="emailButton" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <!-- Email Form (hidden by default) -->
-                    <div id="emailForm" class="hidden mt-4">
-                        <div class="flex gap-2">
-                            <input 
-                                type="email" 
-                                id="emailInput"
-                                placeholder="Enter email address"
-                                class="flex-1 p-2 border border-gray-300 rounded-lg"
-                            >
-                            <button 
-                                id="sendEmailButton"
-                                class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors"
-                                disabled
-                            >
-                                Send
-                            </button>
+            <div id="imageDisplay" class="hidden mt-8">
+                <div class="relative bg-white rounded-lg shadow-lg overflow-hidden">
+                    <button id="deleteButton" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-black hover:bg-gray-600 text-white text-2xl transition-colors duration-200" aria-label="Delete image">×</button>
+                    <img id="generatedImage" class="w-full h-auto" alt="Generated image">
+                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+                        <div class="flex justify-end gap-2">
+                            <button id="viewFullImage" class="px-3 py-2 bg-white text-black rounded hover:bg-gray-100">View Full</button>
+                            <button id="downloadImage" class="px-3 py-2 bg-white text-black rounded hover:bg-gray-100">Download</button>
+                            <button id="emailButton" class="px-3 py-2 bg-white text-black rounded hover:bg-gray-100">Email</button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Email form -->
+            <div id="emailForm" class="hidden mt-4">
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <input
+                        type="email"
+                        id="emailInput"
+                        placeholder="Enter email address"
+                        class="w-full p-2 border rounded mb-2"
+                    >
+                    <button
+                        id="sendEmailButton"
+                        disabled
+                        class="w-full p-2 bg-black text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Send Image
+                    </button>
                 </div>
             </div>
         </main>

@@ -2,10 +2,14 @@ import { VoidboxCore } from './core.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Constants
-    const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw';
+    const DEFAULT_PROMPT = "black cat with green eyes laughing in a top hat. cartoon, bright colors, funny";
+    const WEBHOOK_URLS = {
+        'zero-background': 'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw',
+        'with-background': 'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2'
+    };
 
-    // Initialize core
-    const voidbox = new VoidboxCore(MAKE_WEBHOOK_URL);
+    // Initialize core with both strategies
+    const voidbox = new VoidboxCore({ webhookUrls: WEBHOOK_URLS });
 
     // Cache DOM elements
     const form = document.querySelector('form');
@@ -19,6 +23,99 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailForm = document.getElementById('emailForm');
     const emailInput = document.getElementById('emailInput');
     const sendEmailButton = document.getElementById('sendEmailButton');
+    const imageTypeContainer = document.getElementById('imageTypeContainer');
+
+    // Handle tab key and touch events for prompt input
+    promptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            if (!promptInput.value) {
+                promptInput.value = DEFAULT_PROMPT;
+            }
+            // Move cursor to end and select the text
+            promptInput.setSelectionRange(promptInput.value.length, promptInput.value.length);
+            promptInput.focus();
+        }
+    });
+
+    // For mobile: Double tap to fill and focus
+    let lastTap = 0;
+    promptInput.addEventListener('touchend', (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+            e.preventDefault();
+            if (!promptInput.value) {
+                promptInput.value = DEFAULT_PROMPT;
+            }
+            promptInput.setSelectionRange(promptInput.value.length, promptInput.value.length);
+            promptInput.focus();
+        }
+        lastTap = currentTime;
+    });
+
+    // Create strategy radio buttons if they don't exist
+    const strategyRadioButtons = document.querySelectorAll('input[name="imageType"]');
+    if (strategyRadioButtons.length === 0) {
+        const options = [
+            { value: 'zero-background', text: 'Zero Background (for t-shirts, hoodies, phone cases, flasks, logos)', default: true },
+            { value: 'with-background', text: 'Add Background' }
+        ];
+
+        options.forEach(({ value, text, default: isDefault }) => {
+            const radioButton = document.createElement('input');
+            radioButton.type = 'radio';
+            radioButton.id = value;
+            radioButton.name = 'imageType';
+            radioButton.value = value;
+            radioButton.checked = isDefault;
+            radioButton.className = 'sr-only peer';
+
+            const label = document.createElement('label');
+            label.htmlFor = value;
+            label.className = 'inline-flex items-center justify-center w-full p-2 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer peer-checked:border-primary peer-checked:text-primary hover:text-gray-600 hover:bg-gray-50';
+            label.textContent = text;
+
+            const container = document.createElement('div');
+            container.className = 'flex items-center mb-2';
+            container.appendChild(radioButton);
+            container.appendChild(label);
+
+            imageTypeContainer.appendChild(container);
+        });
+    }
+
+    // Delete button functionality
+    const deleteButton = document.getElementById('deleteButton');
+    let deleteClickCount = 0;
+    let deleteClickTimer = null;
+
+    if (deleteButton) {
+        deleteButton.addEventListener('click', () => {
+            deleteClickCount++;
+            
+            if (deleteClickCount === 1) {
+                // First click - turn red
+                deleteButton.classList.remove('bg-black', 'hover:bg-gray-600');
+                deleteButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                
+                // Reset after 3 seconds
+                deleteClickTimer = setTimeout(() => {
+                    deleteClickCount = 0;
+                    deleteButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    deleteButton.classList.add('bg-black', 'hover:bg-gray-600');
+                }, 3000);
+            } else if (deleteClickCount === 2) {
+                // Second click - delete
+                clearTimeout(deleteClickTimer);
+                imageDisplay.classList.add('hidden');
+                generatedImage.src = '';
+                deleteClickCount = 0;
+                deleteButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                deleteButton.classList.add('bg-black', 'hover:bg-gray-600');
+            }
+        });
+    }
 
     // View full image handler
     if (viewFullImageBtn) {
@@ -69,29 +166,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Form submission handler
+    // Form submit handler
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+        const prompt = promptInput.value.trim() || DEFAULT_PROMPT;
+        const strategy = document.querySelector('input[name="imageType"]:checked').value;
+
+        // Show loading state
+        loadingState.classList.remove('hidden');
+        imageDisplay.classList.add('hidden');
+
         try {
-            // Show loading state
-            loadingState.classList.remove('hidden');
-            imageDisplay.classList.add('hidden');
+            // Generate image using selected strategy
+            const imageUrl = await voidbox.generateImage(prompt, strategy);
             
-            // Generate image using core
-            const imageUrl = await voidbox.generateImage(promptInput.value);
-            
-            // Display image
+            // Display the image
             generatedImage.src = imageUrl;
             generatedImage.onload = () => {
                 imageDisplay.classList.remove('hidden');
                 loadingState.classList.add('hidden');
             };
+
+            // Enable download and share buttons
+            downloadImageBtn.href = imageUrl;
+            downloadImageBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            downloadImageBtn.classList.add('hover:bg-gray-100');
             
+            viewFullImageBtn.href = imageUrl;
+            viewFullImageBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            viewFullImageBtn.classList.add('hover:bg-gray-100');
+
         } catch (error) {
             console.error('Error:', error);
-            alert(error.message || 'Failed to generate image. Please try again.');
             loadingState.classList.add('hidden');
+            alert(error.message || 'Failed to generate image. Please try again.');
         }
     });
+
+    // Update loading message (called from core.js)
+    window.updateLoadingMessage = (message) => {
+        // Removed
+    };
 });

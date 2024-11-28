@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { VoidboxCore, VoidboxError, ImageGenerationStrategy } from './core.js';
+import { VoidboxCore, VoidboxError, ImageGenerationStrategy, ZeroBackgroundStrategy, WithBackgroundStrategy } from './core.js';
 
 // Mock strategy for testing
 class MockStrategy extends ImageGenerationStrategy {
@@ -19,12 +19,14 @@ class MockStrategy extends ImageGenerationStrategy {
 
 describe('VoidboxCore', () => {
     const validWebhookUrl = 'https://hook.us1.make.com/test';
+    const validWebhookUrl2 = 'https://hook.us1.make.com/test2';
     let voidbox;
 
     beforeEach(() => {
         voidbox = new VoidboxCore({
             webhookUrls: {
                 'zero-background': validWebhookUrl,
+                'with-background': validWebhookUrl2,
                 'mock': validWebhookUrl
             }
         });
@@ -34,7 +36,9 @@ describe('VoidboxCore', () => {
     describe('constructor', () => {
         it('should create instance with valid webhook URLs', () => {
             expect(voidbox).toBeInstanceOf(VoidboxCore);
-            expect(voidbox.strategies.size).toBe(2);
+            expect(voidbox.strategies.size).toBe(3);
+            expect(voidbox.strategies.has('zero-background')).toBe(true);
+            expect(voidbox.strategies.has('with-background')).toBe(true);
         });
 
         it('should throw on invalid webhook URL', () => {
@@ -81,19 +85,49 @@ describe('VoidboxCore', () => {
     });
 
     describe('generateImage', () => {
-        it('should generate image URL from valid prompt', async () => {
-            const url = await voidbox.generateImage('test', 'mock');
-            expect(url).toBe('https://example.com/image.jpg');
-        });
-
-        it('should use default strategy when none specified', async () => {
+        beforeEach(() => {
             global.fetch = jest.fn(() => 
                 Promise.resolve({
                     ok: true,
                     text: () => Promise.resolve('https://example.com/image.jpg')
                 })
             );
+        });
 
+        it('should generate image URL from valid prompt with ZBG', async () => {
+            const url = await voidbox.generateImage('test', 'zero-background');
+            expect(url).toBe('https://example.com/image.jpg');
+            expect(global.fetch).toHaveBeenCalledWith(
+                validWebhookUrl,
+                expect.objectContaining({
+                    body: expect.stringContaining('zero-background')
+                })
+            );
+        });
+
+        it('should generate image URL from valid prompt with background', async () => {
+            const url = await voidbox.generateImage('test', 'with-background');
+            expect(url).toBe('https://example.com/image.jpg');
+            expect(global.fetch).toHaveBeenCalledWith(
+                validWebhookUrl2,
+                expect.objectContaining({
+                    body: expect.stringContaining('with-background')
+                })
+            );
+        });
+
+        it('should use zero-background as default strategy', async () => {
+            const url = await voidbox.generateImage('test');
+            expect(url).toBe('https://example.com/image.jpg');
+            expect(global.fetch).toHaveBeenCalledWith(
+                validWebhookUrl,
+                expect.objectContaining({
+                    body: expect.stringContaining('zero-background')
+                })
+            );
+        });
+
+        it('should use default strategy when none specified', async () => {
             const url = await voidbox.generateImage('test');
             expect(url).toBe('https://example.com/image.jpg');
         });
