@@ -49,3 +49,19 @@ All notable changes to the Voidbox project will be documented in this file.
 - Added proper mobile web app meta tags
 - Specified Tailwind version for production
 - Improved Make.com webhook response handling
+
+## [1.0.0] - 2024-01-17
+
+### Production Release 🚀
+- First production deployment to Vercel
+- Stable image generation via Make.com webhook
+- Mobile-responsive design with Tailwind CSS
+- Progressive Web App (PWA) support
+- Production-ready static file serving
+
+### Features
+- Zero-background image generation
+- Minimalist, modern UI
+- Mobile-first design
+- Real-time image preview
+- Serverless deployment
