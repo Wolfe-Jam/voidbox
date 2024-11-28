@@ -41,3 +41,11 @@ All notable changes to the Voidbox project will be documented in this file.
 - Configured nodemon for development
 - Added npm scripts for server management
 - Improved static file organization
+
+## [0.1.2-beta.1] - 2024-01-17
+
+### Fixed
+- Static file serving in production (icon.svg, main.js, favicon.ico)
+- Added proper mobile web app meta tags
+- Specified Tailwind version for production
+- Improved Make.com webhook response handling
