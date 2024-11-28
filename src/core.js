@@ -1,6 +1,6 @@
 /**
  * @fileoverview Core functionality for Voidbox image generation
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 /**
@@ -15,56 +15,133 @@ class VoidboxError extends Error {
 }
 
 /**
- * Core functionality for the Voidbox application
+ * Base class for image generation strategies
  */
-class VoidboxCore {
+class ImageGenerationStrategy {
     /**
-     * @param {string} webhookUrl - The Make.com webhook URL
-     * @throws {VoidboxError} If webhookUrl is invalid
+     * @param {string} webhookUrl - The webhook URL for this strategy
      */
     constructor(webhookUrl) {
-        if (!this.isValidUrl(webhookUrl)) {
+        if (!VoidboxCore.isValidUrl(webhookUrl)) {
             throw new VoidboxError('Invalid webhook URL', 'INVALID_CONFIG');
         }
         this.webhookUrl = webhookUrl;
     }
 
     /**
-     * Generate an image from a prompt
+     * Generate an image
+     * @param {string} prompt - The generation prompt
+     * @param {Object} options - Additional options for this strategy
+     * @returns {Promise<string>} The URL of the generated image
+     * @throws {VoidboxError} If generation fails
+     */
+    async generate(prompt, options = {}) {
+        throw new VoidboxError('Strategy must implement generate()', 'NOT_IMPLEMENTED');
+    }
+
+    /**
+     * Validate strategy-specific options
+     * @param {Object} options - The options to validate
+     * @throws {VoidboxError} If options are invalid
+     */
+    validateOptions(options) {
+        // Default implementation does nothing
+    }
+}
+
+/**
+ * Strategy for zero-background image generation
+ */
+class ZeroBackgroundStrategy extends ImageGenerationStrategy {
+    async generate(prompt, options = {}) {
+        const response = await fetch(this.webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, type: 'zero-background', ...options })
+        });
+
+        if (!response.ok) {
+            throw new VoidboxError(
+                `Server responded with ${response.status}`,
+                'API_ERROR'
+            );
+        }
+
+        const imageUrl = await response.text();
+        if (!VoidboxCore.isValidUrl(imageUrl)) {
+            throw new VoidboxError(
+                'Received invalid image URL from server',
+                'INVALID_RESPONSE'
+            );
+        }
+
+        return imageUrl;
+    }
+}
+
+/**
+ * Core functionality for the Voidbox application
+ */
+class VoidboxCore {
+    /**
+     * @param {Object} config - Configuration object
+     * @param {Object.<string, string>} config.webhookUrls - Map of strategy names to webhook URLs
+     * @throws {VoidboxError} If configuration is invalid
+     */
+    constructor(config) {
+        this.strategies = new Map();
+        
+        // Register default strategies
+        if (config.webhookUrls?.['zero-background']) {
+            this.registerStrategy(
+                'zero-background',
+                new ZeroBackgroundStrategy(config.webhookUrls['zero-background'])
+            );
+        }
+    }
+
+    /**
+     * Register a new generation strategy
+     * @param {string} name - Name of the strategy
+     * @param {ImageGenerationStrategy} strategy - The strategy instance
+     */
+    registerStrategy(name, strategy) {
+        if (!(strategy instanceof ImageGenerationStrategy)) {
+            throw new VoidboxError(
+                'Invalid strategy instance',
+                'INVALID_CONFIG'
+            );
+        }
+        this.strategies.set(name, strategy);
+    }
+
+    /**
+     * Generate an image using the specified strategy
      * @param {string} prompt - The image generation prompt
+     * @param {string} strategyName - Name of the strategy to use
+     * @param {Object} options - Additional options for the strategy
      * @returns {Promise<string>} The URL of the generated image
      * @throws {VoidboxError} If prompt is invalid or generation fails
      */
-    async generateImage(prompt) {
+    async generateImage(prompt, strategyName = 'zero-background', options = {}) {
         try {
             // Validate input
             this.validatePrompt(prompt);
 
-            // Send request to webhook
-            const response = await fetch(this.webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
-            });
-
-            // Handle non-200 responses
-            if (!response.ok) {
+            // Get strategy
+            const strategy = this.strategies.get(strategyName);
+            if (!strategy) {
                 throw new VoidboxError(
-                    `Server responded with ${response.status}`,
-                    'API_ERROR'
+                    `Unknown generation strategy: ${strategyName}`,
+                    'INVALID_CONFIG'
                 );
             }
 
-            // Get and validate image URL
-            const imageUrl = await response.text();
-            if (!this.isValidUrl(imageUrl)) {
-                throw new VoidboxError(
-                    'Received invalid image URL from server',
-                    'INVALID_RESPONSE'
-                );
-            }
+            // Validate strategy options
+            strategy.validateOptions(options);
 
-            return imageUrl;
+            // Generate image
+            return await strategy.generate(prompt, options);
 
         } catch (error) {
             // Convert unknown errors to VoidboxError
@@ -104,16 +181,16 @@ class VoidboxCore {
             );
         }
 
-        // Check prompt length (arbitrary reasonable limits)
+        // Check prompt length
         if (prompt.length > 500) {
             throw new VoidboxError(
-                'Prompt is too long (maximum 500 characters)',
+                'Prompt is too long (max 500 characters)',
                 'INVALID_INPUT'
             );
         }
 
-        // Check for potentially problematic characters
-        if (/[<>{}]/.test(prompt)) {
+        // Check for invalid characters
+        if (!/^[\w\s.,!?()-]+$/i.test(prompt)) {
             throw new VoidboxError(
                 'Prompt contains invalid characters',
                 'INVALID_INPUT'
@@ -122,11 +199,11 @@ class VoidboxCore {
     }
 
     /**
-     * Validate a URL string
+     * Check if a string is a valid URL
      * @param {string} url - The URL to validate
      * @returns {boolean} True if URL is valid
      */
-    isValidUrl(url) {
+    static isValidUrl(url) {
         try {
             new URL(url);
             return true;
@@ -137,4 +214,4 @@ class VoidboxCore {
 }
 
 // Export as ES module
-export { VoidboxCore, VoidboxError };
+export { VoidboxCore, VoidboxError, ImageGenerationStrategy };

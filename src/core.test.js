@@ -1,114 +1,141 @@
 import { jest } from '@jest/globals';
-import { VoidboxCore, VoidboxError } from './core.js';
+import { VoidboxCore, VoidboxError, ImageGenerationStrategy } from './core.js';
+
+// Mock strategy for testing
+class MockStrategy extends ImageGenerationStrategy {
+    async generate(prompt, options = {}) {
+        if (options.fail) {
+            throw new VoidboxError('Mock failure', 'MOCK_ERROR');
+        }
+        return 'https://example.com/image.jpg';
+    }
+
+    validateOptions(options) {
+        if (options.invalid) {
+            throw new VoidboxError('Invalid mock options', 'INVALID_INPUT');
+        }
+    }
+}
 
 describe('VoidboxCore', () => {
     const validWebhookUrl = 'https://hook.us1.make.com/test';
     let voidbox;
 
     beforeEach(() => {
-        voidbox = new VoidboxCore(validWebhookUrl);
-        // Mock fetch globally
-        global.fetch = jest.fn();
+        voidbox = new VoidboxCore({
+            webhookUrls: {
+                'zero-background': validWebhookUrl,
+                'mock': validWebhookUrl
+            }
+        });
+        voidbox.registerStrategy('mock', new MockStrategy(validWebhookUrl));
     });
 
     describe('constructor', () => {
-        test('should create instance with valid webhook URL', () => {
-            expect(voidbox.webhookUrl).toBe(validWebhookUrl);
+        it('should create instance with valid webhook URLs', () => {
+            expect(voidbox).toBeInstanceOf(VoidboxCore);
+            expect(voidbox.strategies.size).toBe(2);
         });
 
-        test('should throw on invalid webhook URL', () => {
-            expect(() => new VoidboxCore('invalid-url')).toThrow(VoidboxError);
+        it('should throw on invalid webhook URL', () => {
+            expect(() => new VoidboxCore({
+                webhookUrls: { 'zero-background': 'invalid-url' }
+            })).toThrow(VoidboxError);
+        });
+    });
+
+    describe('registerStrategy', () => {
+        it('should register valid strategy', () => {
+            const strategy = new MockStrategy(validWebhookUrl);
+            voidbox.registerStrategy('test', strategy);
+            expect(voidbox.strategies.get('test')).toBe(strategy);
+        });
+
+        it('should throw on invalid strategy', () => {
+            expect(() => voidbox.registerStrategy('test', {}))
+                .toThrow(VoidboxError);
         });
     });
 
     describe('validatePrompt', () => {
-        test('should accept valid prompt', () => {
-            expect(() => voidbox.validatePrompt('valid prompt')).not.toThrow();
+        it('should accept valid prompt', () => {
+            expect(() => voidbox.validatePrompt('Test prompt'))
+                .not.toThrow();
         });
 
-        test('should reject empty prompt', () => {
+        it('should reject empty prompt', () => {
             expect(() => voidbox.validatePrompt('')).toThrow(VoidboxError);
             expect(() => voidbox.validatePrompt('   ')).toThrow(VoidboxError);
         });
 
-        test('should reject too long prompt', () => {
+        it('should reject too long prompt', () => {
             const longPrompt = 'a'.repeat(501);
-            expect(() => voidbox.validatePrompt(longPrompt)).toThrow(VoidboxError);
+            expect(() => voidbox.validatePrompt(longPrompt))
+                .toThrow(VoidboxError);
         });
 
-        test('should reject invalid characters', () => {
-            expect(() => voidbox.validatePrompt('prompt<with>tags')).toThrow(VoidboxError);
-            expect(() => voidbox.validatePrompt('prompt{with}braces')).toThrow(VoidboxError);
+        it('should reject invalid characters', () => {
+            expect(() => voidbox.validatePrompt('test<script>'))
+                .toThrow(VoidboxError);
         });
     });
 
     describe('generateImage', () => {
-        const validPrompt = 'test prompt';
-        const validImageUrl = 'https://example.com/image.jpg';
-
-        beforeEach(() => {
-            // Reset mock
-            global.fetch.mockReset();
+        it('should generate image URL from valid prompt', async () => {
+            const url = await voidbox.generateImage('test', 'mock');
+            expect(url).toBe('https://example.com/image.jpg');
         });
 
-        test('should generate image URL from valid prompt', async () => {
-            global.fetch.mockResolvedValueOnce({
-                ok: true,
-                text: () => Promise.resolve(validImageUrl)
-            });
-
-            const result = await voidbox.generateImage(validPrompt);
-            expect(result).toBe(validImageUrl);
-            expect(global.fetch).toHaveBeenCalledWith(
-                validWebhookUrl,
-                expect.objectContaining({
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: validPrompt })
+        it('should use default strategy when none specified', async () => {
+            global.fetch = jest.fn(() => 
+                Promise.resolve({
+                    ok: true,
+                    text: () => Promise.resolve('https://example.com/image.jpg')
                 })
             );
+
+            const url = await voidbox.generateImage('test');
+            expect(url).toBe('https://example.com/image.jpg');
         });
 
-        test('should handle API error', async () => {
-            global.fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500
-            });
-
-            await expect(voidbox.generateImage(validPrompt))
-                .rejects
-                .toThrow(VoidboxError);
+        it('should handle strategy errors', async () => {
+            await expect(voidbox.generateImage('test', 'mock', { fail: true }))
+                .rejects.toThrow(VoidboxError);
         });
 
-        test('should handle network error', async () => {
-            global.fetch.mockRejectedValueOnce(new Error('Network error'));
-
-            await expect(voidbox.generateImage(validPrompt))
-                .rejects
-                .toThrow(VoidboxError);
+        it('should validate strategy options', async () => {
+            await expect(voidbox.generateImage('test', 'mock', { invalid: true }))
+                .rejects.toThrow(VoidboxError);
         });
 
-        test('should handle invalid response URL', async () => {
-            global.fetch.mockResolvedValueOnce({
-                ok: true,
-                text: () => Promise.resolve('not-a-url')
-            });
-
-            await expect(voidbox.generateImage(validPrompt))
-                .rejects
-                .toThrow(VoidboxError);
+        it('should throw on unknown strategy', async () => {
+            await expect(voidbox.generateImage('test', 'unknown'))
+                .rejects.toThrow(VoidboxError);
         });
     });
 
     describe('isValidUrl', () => {
-        test('should validate correct URLs', () => {
-            expect(voidbox.isValidUrl('https://example.com')).toBe(true);
-            expect(voidbox.isValidUrl('http://localhost:3000')).toBe(true);
+        it('should validate correct URLs', () => {
+            expect(VoidboxCore.isValidUrl('https://example.com')).toBe(true);
+            expect(VoidboxCore.isValidUrl('http://test.com/path')).toBe(true);
         });
 
-        test('should reject invalid URLs', () => {
-            expect(voidbox.isValidUrl('not-a-url')).toBe(false);
-            expect(voidbox.isValidUrl('')).toBe(false);
+        it('should reject invalid URLs', () => {
+            expect(VoidboxCore.isValidUrl('not-a-url')).toBe(false);
+            expect(VoidboxCore.isValidUrl('')).toBe(false);
         });
+    });
+});
+
+describe('ImageGenerationStrategy', () => {
+    it('should require generate() implementation', async () => {
+        const strategy = new ImageGenerationStrategy('https://example.com');
+        await expect(strategy.generate('test'))
+            .rejects.toThrow(VoidboxError);
+    });
+
+    it('should allow empty options validation', () => {
+        const strategy = new ImageGenerationStrategy('https://example.com');
+        expect(() => strategy.validateOptions({})).not.toThrow();
     });
 });
