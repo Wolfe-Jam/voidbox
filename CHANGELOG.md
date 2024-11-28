@@ -65,3 +65,17 @@ All notable changes to the Voidbox project will be documented in this file.
 - Mobile-first design
 - Real-time image preview
 - Serverless deployment
+
+## [1.0.1] - 2024-01-17
+
+### Added
+- Core.js module for robust image generation
+- Comprehensive unit tests with Jest
+- Input validation and error handling
+- Clean API separation between core and UI
+
+### Technical
+- Implemented VoidboxCore class
+- Added custom VoidboxError handling
+- Jest testing configuration
+- ES Module support
