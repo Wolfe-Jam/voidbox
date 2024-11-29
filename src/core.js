@@ -1,6 +1,6 @@
 /**
  * @fileoverview Core functionality for Voidbox image generation
- * @version 1.0.1
+ * @version 1.2.0
  */
 
 /**
@@ -84,10 +84,11 @@ class ZeroBackgroundStrategy extends ImageGenerationStrategy {
  */
 class WithBackgroundStrategy extends ImageGenerationStrategy {
     async generate(prompt, options = {}) {
+        // First try POST to submit the job
         const response = await fetch(this.webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt, type: 'with-background', ...options })
+            body: JSON.stringify({ prompt })  // Simplified payload
         });
 
         if (!response.ok) {
@@ -97,10 +98,22 @@ class WithBackgroundStrategy extends ImageGenerationStrategy {
             );
         }
 
-        const imageUrl = await response.text();
+        const responseText = await response.text();
+        console.log('Response:', responseText);
+
+        // If we get an actual URL back, use it
+        if (VoidboxCore.isValidUrl(responseText)) {
+            return responseText;
+        }
+
+        // If not a URL, try GET to retrieve the result
+        const getResponse = await fetch(this.webhookUrl);
+        const imageUrl = await getResponse.text();
+        console.log('GET Response:', imageUrl);
+
         if (!VoidboxCore.isValidUrl(imageUrl)) {
             throw new VoidboxError(
-                'Received invalid image URL from server',
+                'Failed to generate image. Please try again.',
                 'INVALID_RESPONSE'
             );
         }
@@ -235,15 +248,24 @@ class VoidboxCore {
     }
 
     /**
-     * Check if a string is a valid URL
-     * @param {string} url - The URL to validate
+     * Validate a URL string
+     * @param {string} urlString - The URL to validate
      * @returns {boolean} True if URL is valid
      */
-    static isValidUrl(url) {
+    static isValidUrl(urlString) {
+        console.log('Validating URL:', urlString);
+        if (!urlString || typeof urlString !== 'string') {
+            console.log('Invalid URL: not a string or empty');
+            return false;
+        }
+
         try {
-            new URL(url);
-            return true;
-        } catch {
+            const url = new URL(urlString);
+            const isValid = url.protocol === 'http:' || url.protocol === 'https:';
+            console.log('URL validation result:', isValid);
+            return isValid;
+        } catch (e) {
+            console.log('Invalid URL: failed to parse');
             return false;
         }
     }
