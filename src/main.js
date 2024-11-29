@@ -85,6 +85,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Delete button functionality
+    const deleteButton = document.getElementById('deleteButton');
+    let deleteClickCount = 0;
+    let deleteClickTimer = null;
+
+    if (deleteButton) {
+        deleteButton.addEventListener('click', () => {
+            deleteClickCount++;
+            
+            if (deleteClickCount === 1) {
+                // First click - turn red
+                deleteButton.classList.remove('bg-black', 'hover:bg-gray-600');
+                deleteButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                
+                // Reset after 3 seconds
+                deleteClickTimer = setTimeout(() => {
+                    deleteClickCount = 0;
+                    deleteButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    deleteButton.classList.add('bg-black', 'hover:bg-gray-600');
+                }, 3000);
+            } else if (deleteClickCount === 2) {
+                // Second click - delete
+                clearTimeout(deleteClickTimer);
+                imageDisplay.classList.add('hidden');
+                generatedImage.src = '';
+                deleteClickCount = 0;
+                deleteButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                deleteButton.classList.add('bg-black', 'hover:bg-gray-600');
+            }
+        });
+    }
+
     // View full image handler
     if (viewFullImageBtn) {
         viewFullImageBtn.addEventListener('click', () => {
