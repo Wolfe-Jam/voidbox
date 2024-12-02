@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoidBox</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --hover-bg: #f8f9fa;
+            --button-hover: #f8f9fa;
+            --border-color: #dfe1e5;
+            transition: all 0.2s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --hover-bg: #1a1a1a;
+            --button-hover: #1a1a1a;
+            --border-color: #333;
+        }
+
+        body {
+            margin: 0;
+            padding: 140px 20px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(45deg, #000 50%, #fff 50%);
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            transform: rotate(180deg);
+        }
+
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--text-color) 50%, var(--bg-color) 50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+
+        .logo:hover {
+            transform: scale(1.02);
+        }
+
+        .logo::before {
+            content: 'W';
+            font-size: 66px;
+            font-weight: bold;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(-45deg, var(--bg-color) 50%, var(--text-color) 50%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            top: -3px;
+        }
+
+        .logo-text {
+            display: none;
+        }
+
+        .search-container {
+            max-width: 584px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 44px 0 16px; /* Space for the plus button */
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            outline: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-shadow: 0 1px 6px var(--shadow-color);
+        }
+
+        .search-input:focus {
+            box-shadow: 0 1px 8px var(--shadow-color);
+        }
+
+        .add-background-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .add-background-btn:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .plus-icon {
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+
+        .plus-icon::before,
+        .plus-icon::after {
+            content: '';
+            position: absolute;
+            background-color: var(--text-color);
+            transition: background-color 0.2s;
+        }
+
+        .plus-icon::before {
+            width: 2px;
+            height: 20px;
+            left: 9px;
+            top: 0;
+        }
+
+        .plus-icon::after {
+            width: 20px;
+            height: 2px;
+            left: 0;
+            top: 9px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            bottom: -36px;
+            right: 0;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .add-background-btn:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 584px;
+        }
+
+        .button {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 14px;
+            margin: 11px 4px;
+            padding: 0 16px;
+            line-height: 36px;
+            height: 36px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .button:hover {
+            box-shadow: 0 1px 3px var(--shadow-color);
+            background: var(--button-hover);
+            border-color: var(--border-color);
+        }
+
+        .search-history {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 24px 24px;
+            margin-top: -1px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            display: none;
+            z-index: 1000;
+        }
+
+        .search-history.active {
+            display: block;
+        }
+
+        .history-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .history-item:last-child {
+            border-radius: 0 0 24px 24px;
+        }
+
+        .history-icon {
+            opacity: 0.5;
+        }
+
+        #result {
+            margin-top: 40px;
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        @media (max-width: 600px) {
+            .search-container {
+                width: 90%;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" aria-label="Toggle theme"></button>
+    
+    <div class="logo-container">
+        <div class="logo"></div>
+    </div>
+
+    <div class="search-container">
+        <div class="search-input-wrapper">
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Describe your image..."
+                value="White wolf, blue eyes, in winter, vintage art, 5 flat colors, magical"
+                aria-label="Image prompt input"
+            >
+            <button class="add-background-btn" id="withbg" aria-label="Add background to generation">
+                <div class="plus-icon"></div>
+                <span class="tooltip">Add background</span>
+            </button>
+        </div>
+        <div class="search-history"></div>
+    </div>
+
+    <div class="buttons">
+        <button class="button" id="generate">No Background</button>
+        <button class="button" id="lucky">I'm Feeling Creative</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        // Theme handling
+        const theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+
+        const themeToggle = document.querySelector('.theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Search history handling
+        const searchInput = document.querySelector('.search-input');
+        const searchHistory = document.querySelector('.search-history');
+        let history = JSON.parse(localStorage.getItem('promptHistory') || '[]');
+
+        function updateHistory(prompt) {
+            if (!history.includes(prompt)) {
+                history.unshift(prompt);
+                history = history.slice(0, 8);
+                localStorage.setItem('promptHistory', JSON.stringify(history));
+            }
+        }
+
+        function showHistory() {
+            if (history.length === 0) return;
+            
+            searchHistory.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <span class="history-icon">↑</span>
+                    <span>${item}</span>
+                </div>
+            `).join('');
+            
+            searchHistory.classList.add('active');
+        }
+
+        searchInput.addEventListener('focus', showHistory);
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target)) {
+                searchHistory.classList.remove('active');
+            }
+        });
+
+        searchHistory.addEventListener('click', (e) => {
+            const item = e.target.closest('.history-item');
+            if (item) {
+                searchInput.value = item.querySelector('span:last-child').textContent;
+                searchHistory.classList.remove('active');
+            }
+        });
+
+        // Random prompts
+        const randomPrompts = [
+            "Cosmic jellyfish in deep space, bioluminescent, ethereal",
+            "Steampunk owl with brass gears and copper wings",
+            "Crystal forest at dawn, prismatic light, magical",
+            "Desert nomad with wind-swept robes, minimal art style",
+            "Ancient tree of life, celtic patterns, mystical",
+            "Cyberpunk samurai with neon katana, retro future",
+            "Arctic fox in northern lights, watercolor style",
+            "Dragon made of constellation stars, celestial"
+        ];
+
+        document.getElementById('lucky').addEventListener('click', () => {
+            const randomPrompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
+            searchInput.value = randomPrompt;
+            generate(false);
+        });
+
+        // Add cooldown tracking
+        let lastGenerationTime = 0;
+        const COOLDOWN_PERIOD = 3000; // 3 seconds cooldown
+
+        // Image generation
+        async function generate(withBackground = false) {
+            const now = Date.now();
+            const timeElapsed = now - lastGenerationTime;
+            
+            if (timeElapsed < COOLDOWN_PERIOD) {
+                const waitTime = Math.ceil((COOLDOWN_PERIOD - timeElapsed) / 1000);
+                result.innerHTML = `<div style="color: var(--text-color); text-align: center; padding: 20px;">
+                    Please wait ${waitTime} seconds before generating another image...
+                </div>`;
+                return;
+            }
+
+            const prompt = searchInput.value.trim();
+            if (!prompt) return;
+
+            const generateBtn = document.getElementById('generate');
+            const withBgBtn = document.getElementById('withbg');
+            const luckyBtn = document.getElementById('lucky');
+            const result = document.getElementById('result');
+
+            // Disable buttons during generation
+            generateBtn.disabled = true;
+            withBgBtn.disabled = true;
+            luckyBtn.disabled = true;
+            
+            const activeBtn = withBackground ? withBgBtn : generateBtn;
+            const originalText = activeBtn.textContent;
+            activeBtn.textContent = 'Generating...';
+
+            try {
+                const url = withBackground 
+                    ? 'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2'
+                    : 'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw';
+                    
+                result.innerHTML = `<div style="color: var(--text-color); text-align: center; padding: 20px;">
+                    Generating your image...
+                </div>`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const imageUrl = await response.text();
+                
+                // Validate the response
+                if (!response.ok) {
+                    if (response.status === 500) {
+                        throw new Error('Service is busy. Please wait a moment and try again.');
+                    }
+                    throw new Error('Generation failed - please try again');
+                }
+
+                if (!imageUrl.startsWith('http')) {
+                    throw new Error('Invalid image generated. Please try again.');
+                }
+
+                // Create new image element
+                const img = new Image();
+                img.src = imageUrl;
+                img.alt = "Generated image";
+                
+                // Clear previous content and add new image
+                result.innerHTML = '';
+                result.appendChild(img);
+                
+                updateHistory(prompt);
+                lastGenerationTime = Date.now(); // Update last successful generation time
+            } catch (error) {
+                console.error('Generation error:', error);
+                result.innerHTML = `<div style="color: var(--text-color); text-align: center; padding: 20px;">
+                    ${error.message}<br>
+                    <button onclick="retryLastGeneration()" class="button" style="margin-top: 10px;">Retry</button>
+                </div>`;
+            } finally {
+                // Re-enable buttons regardless of outcome
+                generateBtn.disabled = false;
+                withBgBtn.disabled = false;
+                luckyBtn.disabled = false;
+                activeBtn.textContent = originalText;
+            }
+        }
+
+        // Keep track of last generation type for retry
+        let lastGenerationType = false;
+        
+        function retryLastGeneration() {
+            generate(lastGenerationType);
+        }
+
+        // Event listeners
+        document.getElementById('generate').addEventListener('click', () => {
+            lastGenerationType = false;
+            generate(false);
+        });
+        
+        document.getElementById('withbg').addEventListener('click', () => {
+            lastGenerationType = true;
+            generate(true);
+        });
+        
+        document.getElementById('lucky').addEventListener('click', () => {
+            lastGenerationType = false;
+            const randomPrompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
+            searchInput.value = randomPrompt;
+            generate(false);
+        });
+
+        searchInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                lastGenerationType = false;
+                generate(false);
+            }
+        });
+    </script>
+</body>
+</html>
