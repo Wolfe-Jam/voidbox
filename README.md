@@ -3,8 +3,8 @@
 A specialized web application for generating images with no background, perfect for design assets and creative projects.
 
 ## 🎨 First Live Generation
-![White Wolf - First Live Generation](https://cdn.leonardo.ai/users/ee52994c-c21f-4c7f-960d-cfe74a0c176c/generations/e9eabffd-7723-4538-ae98-7b880eb231f3/AlbedoBase_XL_a_cool_wolf_sports_character_in_a_red_hoodie_wit_0.jpg)
-*Our signature prompt: "White Wolf, blue eyes, staring, vintage, flat color, magical"*
+![White Wolf - First Live Generation](https://cdn.leonardo.ai/users/ee52994c-c21f-4c7f-960d-cfe74a0c176c/generations/23ef8b3c-4897-4389-8f1d-e73788e6363d/AlbedoBase_XL_White_Wolf_blue_eyes_staring_vintage_flat_color_0.png)
+*First live generation using our signature prompt: "White Wolf, blue eyes, staring, vintage, flat color, magical"*
 
 ## 🎯 Core Features
 
