@@ -1,6 +1,6 @@
 {
   "name": "voidbox",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI-powered image generation platform with zero background and background options",
   "type": "module",
   "main": "server.js",
@@ -8,7 +8,9 @@
     "start": "node server.js",
     "dev": "nodemon server.js --watch . --ext js,html,css",
     "test": "jest",
-    "stop": "lsof -ti :3002 | xargs kill -9"
+    "stop": "lsof -ti :3002 | xargs kill",
+    "build": "mkdir -p dist && cp -r public dist/ && cp -r core dist/ && cp -r middleware dist/ && cp server.js dist/ && cp package.json dist/ && cp .env dist/",
+    "test-build": "npm run build && cd dist && npm install --production && npm start"
   },
   "keywords": [
     "ai",
@@ -23,12 +25,23 @@
   "dependencies": {
     "compression": "^1.7.5",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "node-fetch": "^3.3.2",
-    "dotenv": "^16.3.1"
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "throttle-proxy": "^2.3.1"
+  },
+  "jest": {
+    "transform": {},
+    "extensionsToTreatAsEsm": [
+      ".js"
+    ],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
   }
 }

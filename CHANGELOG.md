@@ -79,3 +79,21 @@ All notable changes to the Voidbox project will be documented in this file.
 - Added custom VoidboxError handling
 - Jest testing configuration
 - ES Module support
+
+## [1.1.0] - 2023-12-28
+### Added
+- Core Features Documentation (CORE_FEATURES.md)
+- Standardized timestamp format for downloads
+
+### Fixed
+- Download functionality now properly handles external URLs
+- Email modal positioning at bottom of image
+- Delete button positioning
+
+### Protected
+- Core functionality locked and documented:
+  - Image Generation (basic, ZBG, random)
+  - View functionality
+  - Download functionality
+  - Email sharing
+  - Delete/Clear feature

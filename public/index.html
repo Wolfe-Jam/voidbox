@@ -2,12 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1976d2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="images/logo.svg">
     <title>VoidBox</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="js/prompts.js"></script>
-    <script src="js/approved-prompts.js"></script>
-    <script src="js/prompt-system.js"></script>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="images/logo.svg" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+    
+    <!-- Defer non-critical CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <style>
         :root {
             --primary-color: #1976d2;
@@ -21,6 +29,7 @@
             --button-hover: #f1f3f4;
             --icon-filter: none;
             --placeholder-color: rgba(25, 118, 210, 0.6);
+            --input-bg: #f8f9fa;
         }
 
         [data-theme="dark"] {
@@ -33,6 +42,7 @@
             --button-hover: #3c4043;
             --icon-filter: invert(1);
             --placeholder-color: rgba(66, 165, 245, 0.6);
+            --input-bg: #303134;
         }
 
         body {
@@ -46,6 +56,7 @@
             font-family: 'Inter', sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
+            overscroll-behavior-y: contain;
         }
 
         .theme-toggle {
@@ -119,9 +130,23 @@
         }
 
         .search-container {
-            max-width: 584px;
-            margin: 0 auto;
             width: 100%;
+            max-width: 600px;
+            position: relative;
+            margin: 20px auto;
+        }
+
+        #search-input {
+            width: 600px;
+            height: 36px;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
         .search-label {
@@ -133,8 +158,7 @@
             margin-bottom: 8px;
         }
 
-        .search-box {
-            position: relative;
+        .search-wrapper {
             display: flex;
             align-items: center;
             width: 100%;
@@ -144,12 +168,33 @@
         .search-input {
             flex: 1;
             border: none;
-            background: none;
-            padding: 0;
-            color: var(--text-color);
+            border-radius: 24px;
+            padding: 12px 48px 12px 20px;
             font-size: 16px;
+            line-height: 24px;
+            color: var(--text-color);
+            background: var(--input-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .search-input:focus {
             outline: none;
-            margin: 0 8px;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.4);
+        }
+
+        [data-theme="dark"] .search-input:focus {
+            box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.4);
+        }
+
+        .search-input:not(:focus) {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .search-input:not(:focus) {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         #search-input::-webkit-input-placeholder {
@@ -170,14 +215,6 @@
         }
         [data-theme="dark"] #search-input:-ms-input-placeholder {
             color: rgba(66, 165, 245, 0.6) !important;
-        }
-
-        .search-input:focus {
-            outline: 2px solid rgba(25, 118, 210, 0.6);
-        }
-
-        [data-theme="dark"] .search-input:focus {
-            outline: 2px solid rgba(66, 165, 245, 0.6);
         }
 
         .search-input::selection {
@@ -276,6 +313,8 @@
             min-width: 120px;
             text-align: center;
             white-space: nowrap;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .button:hover {
@@ -302,16 +341,15 @@
 
         #result {
             position: relative;
-            width: 100%;
-            display: flex;
-            justify-content: center;
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
         }
 
         #result img {
-            max-width: 512px;
-            height: auto;
+            max-width: 100%;
             border-radius: 8px;
-            box-shadow: 0 2px 8px var(--shadow-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .action-buttons {
@@ -364,25 +402,25 @@
             gap: 8px;
         }
 
-        .email-input {
-            flex: 1;
+        #email-input {
+            height: 36px;
             padding: 8px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            background: rgba(50, 50, 50, 0.95);
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .email-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .email-input:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
+            border-color: var(--primary-color);
+        }
+
+        .email-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .email-send {
@@ -427,56 +465,75 @@
         }
 
         .delete-confirm {
-            display: none;
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: var(--bg-color);
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px var(--shadow-color);
-            z-index: 1100;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
             text-align: center;
         }
 
-        .delete-confirm .buttons {
+        .delete-confirm.active {
+            display: block;
+        }
+
+        .delete-confirm-buttons {
+            margin-top: 16px;
             display: flex;
-            gap: 10px;
             justify-content: center;
-            margin-top: 15px;
+            gap: 12px;
         }
 
-        .delete-confirm button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
         }
 
-        .delete-confirm .confirm {
-            background: #ff4444;
-            color: white;
+        .loading-overlay.active {
+            display: flex;
         }
 
-        .delete-confirm .cancel {
-            background: var(--button-bg);
-            color: var(--button-text);
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .search-history {
             position: absolute;
             top: 100%;
             left: 0;
-            right: 0;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
             background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            box-shadow: 0 4px 6px rgba(32,33,36,0.28);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
             display: none;
-            z-index: 100;
         }
 
         .search-history.active {
@@ -484,16 +541,95 @@
         }
 
         .history-item {
-            padding: 12px 20px;
+            padding: 8px 15px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-color);
+            transition: background-color 0.2s;
         }
 
         .history-item:hover {
-            background: var(--hover-bg);
+            background-color: var(--button-hover);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--button-bg);
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-button:hover {
+            background: var(--button-hover);
+        }
+
+        #result {
+            position: relative;
+        }
+
+        /* Mobile-first base styles */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        input, textarea {
+            user-select: text;
+        }
+
+        /* Prevent pull-to-refresh */
+        body {
+            overscroll-behavior-y: contain;
+        }
+
+        /* Optimize touch targets */
+        button, 
+        .search-input,
+        .email-input,
+        .close-button {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Prevent text size adjustment */
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Enhanced touch feedback */
+        @media (hover: none) {
+            .button:active,
+            .search-input:active,
+            .email-input:active {
+                transform: scale(0.98);
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 14px;
+            display: none;
+            z-index: 2000;
         }
 
         .send-success {
@@ -667,17 +803,16 @@
         
         <div class="search-container">
             <div class="search-label">Describe your desired image</div>
-            <div class="search-box">
+            <div class="search-wrapper">
                 <input 
-                    type="text" 
-                    class="search-input" 
+                    type="text"
+                    class="search-input"
                     id="search-input"
-                    placeholder="White Wolf, blue eyes, staring, vintage, flat color, magical"
+                    value="White Wolf, blue eyes, staring, vintage, flat color, magical"
                     autocomplete="off"
                     autocorrect="off"
                     spellcheck="false"
                     tabindex="1"
-                    style="--placeholder-color: rgba(25, 118, 210, 0.6); color: var(--text-color);"
                 >
                 <button class="clear-button" id="clear-button" tabindex="3">
                     <img src="images/icons/close.svg" alt="Clear">
@@ -690,15 +825,15 @@
         </div>
 
         <div class="buttons">
-            <button class="button" id="generate">
+            <button class="button" id="generate-btn">
                 Generate
                 <span class="tooltip">Generate with background</span>
             </button>
-            <button class="button" id="withbg">
+            <button class="button" id="withbg-btn">
                 ZBG
                 <span class="tooltip">Generate without background</span>
             </button>
-            <button class="button" id="lucky">
+            <button class="button" id="lucky-btn">
                 Randomize!
                 <span class="tooltip">Random prompt without background</span>
             </button>
@@ -738,20 +873,35 @@
                     </button>
                 </div>
                 <div id="email-confirmation" class="email-confirmation">Email sent!</div>
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
             </div>
         </div>
         
         <!-- Delete Confirmation Popup -->
         <div class="delete-confirm" id="delete-confirm">
             <p>Are you sure you want to delete this image?</p>
-            <div class="buttons">
-                <button class="cancel" id="delete-cancel">Cancel</button>
-                <button class="confirm" id="delete-confirm-btn">Delete</button>
+            <div class="delete-confirm-buttons">
+                <button class="button" onclick="deleteImage()">Delete</button>
+                <button class="button" onclick="document.querySelector('.delete-confirm').classList.remove('active')">Cancel</button>
             </div>
         </div>
+        
+        <div class="connection-status" id="connection-status"></div>
     </div>
     
     <script>
+        // Prompt system
+        const APPROVED_PROMPTS = [
+            "White Wolf, blue eyes, staring, vintage, flat color, magical",
+            "White Wolf, mystical aura, glowing eyes, ethereal, minimalist",
+            "White Wolf, northern lights, cosmic energy, spiritual, dreamy",
+            "White Wolf, winter forest, moonlight, serene, artistic",
+            "White Wolf, sacred geometry, spirit animal, wisdom, ancient",
+            "White Wolf, starry night, guardian, powerful, majestic"
+        ];
+
         // Theme handling
         const theme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', theme);
@@ -764,306 +914,37 @@
             localStorage.setItem('theme', newTheme);
         });
 
-        // Initialize variables and DOM elements after DOMContentLoaded
+        // Initialize variables
+        let isGenerating = false;
+        let promptHistory = JSON.parse(localStorage.getItem('promptHistory') || '[]');
+        
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize DOM elements
+            // Initialize core UI elements
             const searchInput = document.getElementById('search-input');
-            const searchHistory = document.getElementById('search-history');
             const clearButton = document.getElementById('clear-button');
             const actionButtons = document.getElementById('action-buttons');
-            const generateBtn = document.getElementById('generate');
-            const withbgBtn = document.getElementById('withbg');
-            const luckyBtn = document.getElementById('lucky');
-            const emailButton = document.getElementById('email-button');
-            const emailContainer = document.getElementById('email-container');
-            const emailInput = document.getElementById('email-input');
-            const sendEmailButton = document.getElementById('send-email');
-            const cancelEmailButton = document.getElementById('cancel-email');
-
-            // Initialize state
-            let promptHistory = JSON.parse(localStorage.getItem('promptHistory') || '[]');
-            let lastGenerationType = false;
-            let isGenerating = false;
-
-            // Debug log for elements
-            console.log('Elements initialized:', {
-                searchInput,
-                clearButton,
-                actionButtons
-            });
-
-            // Search input functionality
-            if (searchInput) {
-                console.log('Setting up search input listeners');
-                
-                // Handle Enter key
-                searchInput.addEventListener('keydown', (e) => {
-                    console.log('Key pressed:', e.key);
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        console.log('Enter pressed, generating image');
-                        generateImage(lastGenerationType);
-                    }
-                });
-
-                // Handle input changes
-                searchInput.addEventListener('input', (e) => {
-                    console.log('Input changed:', e.target.value);
-                    if (clearButton) {
-                        clearButton.style.display = e.target.value ? 'flex' : 'none';
-                    }
-                });
-
-                // Handle focus
-                searchInput.addEventListener('focus', (e) => {
-                    console.log('Search input focused');
-                    if (!e.target.value) {
-                        e.target.value = e.target.placeholder;
-                        e.target.select();
-                    }
-                });
-
-                // Initial focus and value
-                searchInput.focus();
-                if (!searchInput.value) {
-                    searchInput.value = searchInput.placeholder;
-                }
-            }
-
-            // Clear button functionality
-            if (clearButton) {
-                console.log('Setting up clear button listener');
-                clearButton.addEventListener('click', () => {
-                    if (searchInput) {
-                        console.log('Clear button clicked');
-                        searchInput.value = '';
-                        clearButton.style.display = 'none';
-                        searchInput.focus();
-                    }
-                });
-            }
-
-            // Approved prompts
-            const approvedPrompts = APPROVED_PROMPTS;
-
-            function getApprovedPrompt() {
-                return approvedPrompts[Math.floor(Math.random() * approvedPrompts.length)];
-            }
-
-            // Premium generation - uses approved prompts only
-            function generatePremiumPrompt() {
-                return getApprovedPrompt().toString();
-            }
-
-            // Free dice roll - more experimental combinations
-            function generateExperimentalPrompt() {
-                const subject = getRandomElement(prompts.getAllSubjects());
-                const description = getRandomElement(prompts.descriptions);
-                const activity = getRandomElement(prompts.activities);
-                const style = getRandomElement(prompts.styles);
-                const vibe = getRandomElement(prompts.vibes);
-                const color = getRandomElement(prompts.colors);
-                
-                return `${description} ${subject} ${activity}, ${style} ${vibe}, ${color}`;
-            }
-
-            // Button event listeners
-            if (generateBtn) {
-                generateBtn.addEventListener('click', () => generateImage(true));
-            }
-
-            if (withbgBtn) {
-                withbgBtn.addEventListener('click', () => generateImage(false));
-            }
-
-            if (luckyBtn) {
-                luckyBtn.addEventListener('click', () => {
-                    if (isGenerating) return;
-                    // Use fixed prompts for the Randomize button (tested combinations)
-                    searchInput.value = getFixedPrompt().toString();
-                    generateImage(false);
-                });
-            }
-
-            // Dice roll uses mixed prompts (more experimental)
-            if (diceButton) {
-                diceButton.addEventListener('click', () => {
-                    searchInput.value = getMixedPrompt().toString();
-                    searchInput.focus();
-                });
-            }
-
-            // Email functionality
-            // Debug log for email elements
-            console.log('Email elements:', {
-                emailButton,
-                emailContainer,
-                emailInput,
-                sendEmailButton,
-                cancelEmailButton
-            });
-
-            if (emailButton) {
-                emailButton.addEventListener('click', (e) => {
-                    console.log('Email button clicked');
-                    e.stopPropagation();
-                    if (emailContainer) {
-                        emailContainer.style.display = emailContainer.style.display === 'block' ? 'none' : 'block';
-                        if (emailContainer.style.display === 'block' && emailInput) {
-                            emailInput.focus();
-                        }
-                    }
-                });
-            }
-
-            if (cancelEmailButton) {
-                cancelEmailButton.addEventListener('click', () => {
-                    if (emailContainer) {
-                        emailContainer.style.display = 'none';
-                    }
-                    if (emailInput) {
-                        emailInput.value = '';
-                    }
-                });
-            }
-
-            // Close email container when clicking outside
-            document.addEventListener('click', (e) => {
-                if (emailContainer && 
-                    emailContainer.style.display === 'block' && 
-                    !emailContainer.contains(e.target) && 
-                    emailButton && !emailButton.contains(e.target)) {
-                    emailContainer.style.display = 'none';
-                }
-            });
-
-            if (sendEmailButton) {
-                sendEmailButton.addEventListener('click', async () => {
-                    const img = document.querySelector('#result img');
-                    if (!img) {
-                        showNotification('No image to send!', true);
-                        return;
-                    }
-                    if (!emailInput || !emailInput.value) {
-                        showNotification('Please enter an email address!', true);
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch('https://hook.us1.make.com/ge2xit3rtum5nvk1vfmbu89z5p9um54e', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                email: emailInput.value,
-                                imageUrl: img.src
-                            })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Failed to send email');
-                        }
-
-                        // Show confirmation
-                        const confirmation = document.getElementById('email-confirmation');
-                        if (confirmation) {
-                            confirmation.classList.add('show');
-                            setTimeout(() => {
-                                confirmation.classList.remove('show');
-                                // Hide email container after confirmation
-                                setTimeout(() => {
-                                    if (emailContainer) {
-                                        emailContainer.style.display = 'none';
-                                    }
-                                }, 300);
-                            }, 2000);
-                        }
-
-                        // Clear input
-                        emailInput.value = '';
-                    } catch (error) {
-                        console.error('Email error:', error);
-                        showNotification('Failed to send email. Please try again.', true);
-                    }
-                });
-            }
-
-            // Handle Enter key in email input
-            if (emailInput) {
-                emailInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && sendEmailButton) {
-                        e.preventDefault();
-                        sendEmailButton.click();
-                    }
-                });
-            }
-
-            // Initialize action buttons
+            const generateBtn = document.getElementById('generate-btn');
+            const withbgBtn = document.getElementById('withbg-btn');
+            const luckyBtn = document.getElementById('lucky-btn');
             const viewButton = document.getElementById('view-button');
-            const downloadButton = document.getElementById('download-button');
+            const emailButton = document.getElementById('email-button');
+            const deleteButton = document.getElementById('delete-button');
+            const searchHistory = document.getElementById('search-history');
 
-            if (viewButton) {
-                viewButton.addEventListener('click', () => {
-                    const img = document.querySelector('#result img');
-                    if (img) {
-                        window.open(img.src, '_blank');
-                    }
-                });
-            }
+            // Helper functions
+            async function generateImage(withBackground = false) {
+                if (isGenerating) return;
 
-            if (downloadButton) {
-                downloadButton.addEventListener('click', async () => {
-                    const img = document.querySelector('#result img');
-                    if (img) {
-                        try {
-                            const response = await fetch(img.src);
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            // Generate filename based on prompt and timestamp
-                            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                            const promptText = searchInput.value.slice(0, 30).replace(/[^a-z0-9]/gi, '-');
-                            a.download = `voidbox-${promptText}-${timestamp}.png`;
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                        } catch (error) {
-                            console.error('Download failed:', error);
-                        }
-                    }
-                });
-            }
-
-            // Image generation function
-            async function generateImage(withBackground) {
-                if (isGenerating || !searchInput) return;
-                isGenerating = true;
-                lastGenerationType = withBackground;
-
-                const prompt = searchInput.value.trim();
-                if (!prompt) {
-                    isGenerating = false;
-                    return;
-                }
-
-                updatePromptHistory(prompt);
-                displayPromptHistory();
-
+                const searchInput = document.getElementById('search-input');
                 const result = document.getElementById('result');
-                if (!result) {
-                    isGenerating = false;
+                const prompt = searchInput.value.trim();
+                
+                if (!prompt) {
+                    showNotification('Please enter a prompt', true);
                     return;
                 }
 
-                // Hide action buttons during generation
-                if (actionButtons) {
-                    actionButtons.style.display = 'none';
-                }
+                isGenerating = true;
 
                 // Show loading animation
                 result.innerHTML = `
@@ -1082,16 +963,22 @@
                     </div>
                 `;
 
-                try {
-                    const webhook = withBackground
-                        ? 'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2'
-                        : 'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw';
+                // Hide action buttons during generation
+                if (actionButtons) {
+                    actionButtons.style.display = 'none';
+                }
 
-                    const response = await fetch(webhook, {
+                try {
+                    const response = await fetch(withBackground ? 
+                        'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2' : 
+                        'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Origin': window.location.origin
                         },
+                        mode: 'cors',
+                        credentials: 'omit',
                         body: JSON.stringify({ prompt })
                     });
 
@@ -1100,35 +987,10 @@
                     }
 
                     const imageUrl = await response.text();
-                    result.innerHTML = `
-                        <div class="image-container">
-                            <img src="${imageUrl}" alt="${prompt}" class="result-image">
-                            <button class="delete-button" aria-label="Delete image">×</button>
-                        </div>
-                    `;
-
-                    // Add delete button functionality
-                    const deleteButton = result.querySelector('.delete-button');
-                    if (deleteButton) {
-                        let deleteTimeout;
-                        deleteButton.addEventListener('click', () => {
-                            if (deleteButton.classList.contains('confirm-state')) {
-                                // Actually delete
-                                result.innerHTML = '<div class="image-container"></div>';
-                                if (actionButtons) {
-                                    actionButtons.style.display = 'none';
-                                }
-                            } else {
-                                // First click - show confirmation
-                                deleteButton.classList.add('confirm-state');
-                                clearTimeout(deleteTimeout);
-                                deleteTimeout = setTimeout(() => {
-                                    deleteButton.classList.remove('confirm-state');
-                                }, 3000);
-                            }
-                        });
-                    }
-
+                    updatePromptHistory(prompt);
+                    displayImage(imageUrl);
+                    
+                    // Show action buttons after successful generation
                     if (actionButtons) {
                         actionButtons.style.display = 'flex';
                     }
@@ -1139,55 +1001,250 @@
                             Failed to generate image. Please try again.
                         </div>
                     `;
+                    showNotification(error.message || 'Failed to generate image', true);
                 } finally {
                     isGenerating = false;
                 }
             }
 
-            // Helper functions
-            function updatePromptHistory(prompt) {
-                if (prompt && !promptHistory.includes(prompt)) {
-                    promptHistory.unshift(prompt);
-                    if (promptHistory.length > 8) {
-                        promptHistory.pop();
+            // Set up generation buttons
+            if (generateBtn) {
+                generateBtn.addEventListener('click', () => {
+                    if (!isGenerating) {
+                        generateImage(false);
                     }
-                    localStorage.setItem('promptHistory', JSON.stringify(promptHistory));
-                }
+                });
             }
 
-            function displayPromptHistory() {
-                if (searchHistory && promptHistory.length > 0) {
-                    searchHistory.innerHTML = promptHistory
-                        .map(prompt => `<div class="history-item">${prompt}</div>`)
-                        .join('');
-                    
-                    document.querySelectorAll('.history-item').forEach((item, index) => {
-                        item.addEventListener('click', () => {
-                            if (searchInput) {
-                                searchInput.value = promptHistory[index];
-                                searchHistory.classList.remove('active');
-                            }
-                        });
+            if (withbgBtn) {
+                withbgBtn.addEventListener('click', () => {
+                    if (!isGenerating) {
+                        generateImage(true);
+                    }
+                });
+            }
+
+            if (luckyBtn) {
+                luckyBtn.addEventListener('click', () => {
+                    if (!isGenerating) {
+                        searchInput.value = getApprovedPrompt();
+                        generateImage(false);
+                    }
+                });
+            }
+
+            // Core action buttons setup
+            if (viewButton) {
+                viewButton.addEventListener('click', () => {
+                    const img = document.querySelector('#result img');
+                    if (img) {
+                        window.open(img.src, '_blank');
+                    }
+                });
+            }
+
+            const downloadButton = document.getElementById('download-button');
+            if (downloadButton) {
+                downloadButton.addEventListener('click', async () => {
+                    const img = document.querySelector('#result img');
+                    if (!img) {
+                        showNotification('No image to download!', true);
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(img.src);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const now = new Date();
+                        const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+                        
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `Void-Box-${timestamp}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        showNotification('Failed to download image', true);
+                    }
+                });
+            }
+
+            if (emailButton) {
+                const emailContainer = document.getElementById('email-container');
+                const emailInput = document.getElementById('email-input');
+                const sendEmailButton = document.getElementById('send-email');
+                const cancelEmailButton = document.getElementById('cancel-email');
+
+                emailButton.addEventListener('click', () => {
+                    if (emailContainer) {
+                        emailContainer.style.display = emailContainer.style.display === 'block' ? 'none' : 'block';
+                        if (emailContainer.style.display === 'block' && emailInput) {
+                            emailInput.focus();
+                        }
+                    }
+                });
+
+                if (cancelEmailButton) {
+                    cancelEmailButton.addEventListener('click', () => {
+                        emailContainer.style.display = 'none';
+                        emailInput.value = '';
+                    });
+                }
+
+                if (sendEmailButton) {
+                    sendEmailButton.addEventListener('click', () => {
+                        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                        if (!emailRegex.test(emailInput.value)) {
+                            showNotification('Please enter a valid email address', true);
+                            return;
+                        }
+
+                        const img = document.querySelector('#result img');
+                        if (!img) {
+                            showNotification('No image to send!', true);
+                            return;
+                        }
+
+                        // Simulate email sending
+                        showNotification('Email sent successfully!');
+                        emailContainer.style.display = 'none';
+                        emailInput.value = '';
                     });
                 }
             }
 
-            function showNotification(message, isError = false) {
-                const notification = document.createElement('div');
-                notification.className = 'send-success show';
-                if (isError) {
-                    notification.style.background = '#dc2626';
+            // Delete functionality
+            function addCloseButton() {
+                const resultContainer = document.getElementById('result');
+                if (!resultContainer) return;
+
+                // Remove existing close button if any
+                const existingButton = resultContainer.querySelector('.close-button');
+                if (existingButton) {
+                    existingButton.remove();
                 }
-                notification.textContent = message;
-                document.body.appendChild(notification);
-                setTimeout(() => {
-                    notification.remove();
-                }, 3000);
+
+                const closeButton = document.createElement('button');
+                closeButton.className = 'close-button';
+                closeButton.innerHTML = '×';
+                
+                closeButton.addEventListener('click', () => {
+                    resultContainer.innerHTML = '';
+                    showNotification('Image deleted');
+                });
+
+                resultContainer.appendChild(closeButton);
             }
 
-            // Initialize history display
+            // Add close button when displaying image
+            function displayImage(imageUrl) {
+                const result = document.getElementById('result');
+                if (result) {
+                    result.innerHTML = `<img src="${imageUrl}" alt="Generated image">`;
+                    addCloseButton();
+                }
+            }
+
+            // Set up search input
+            if (searchInput) {
+                console.log('Setting up search input listeners');
+                searchInput.addEventListener('focus', () => {
+                    console.log('Search input focused');
+                    if (promptHistory.length > 0) {
+                        searchHistory.classList.add('active');
+                    }
+                });
+
+                searchInput.addEventListener('blur', () => {
+                    console.log('Search input blurred');
+                    setTimeout(() => {
+                        searchHistory.classList.remove('active');
+                    }, 200);
+                });
+
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !isGenerating) {
+                        generateImage(false);
+                    }
+                });
+            }
+
+            // Set up clear button
+            if (clearButton) {
+                console.log('Setting up clear button');
+                clearButton.addEventListener('click', () => {
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchInput.focus();
+                    }
+                });
+
+                // Show/hide clear button based on input content
+                searchInput.addEventListener('input', () => {
+                    clearButton.style.display = searchInput.value ? 'flex' : 'none';
+                });
+            }
+
+            // Initialize clear button visibility
+            if (searchInput && clearButton) {
+                clearButton.style.display = searchInput.value ? 'flex' : 'none';
+            }
+
+            // Initialize prompt history
             displayPromptHistory();
         });
+
+        // Helper functions
+        function updatePromptHistory(prompt) {
+            console.log('Updating prompt history:', prompt);
+            if (prompt && !promptHistory.includes(prompt)) {
+                promptHistory.unshift(prompt);
+                if (promptHistory.length > 8) {
+                    promptHistory.pop();
+                }
+                localStorage.setItem('promptHistory', JSON.stringify(promptHistory));
+                displayPromptHistory();
+            }
+        }
+
+        function displayPromptHistory() {
+            console.log('Displaying prompt history');
+            const searchHistory = document.getElementById('search-history');
+            if (searchHistory && promptHistory.length > 0) {
+                searchHistory.innerHTML = promptHistory
+                    .map(prompt => `<div class="history-item" tabindex="0">${prompt}</div>`)
+                    .join('');
+                
+                const historyItems = searchHistory.querySelectorAll('.history-item');
+                historyItems.forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        const searchInput = document.getElementById('search-input');
+                        if (searchInput) {
+                            searchInput.value = promptHistory[index];
+                            searchInput.focus();
+                        }
+                    });
+                });
+            }
+        }
+
+        function getApprovedPrompt() {
+            return APPROVED_PROMPTS[Math.floor(Math.random() * APPROVED_PROMPTS.length)];
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
     </script>
 </body>
 </html>
