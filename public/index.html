@@ -121,23 +121,27 @@
         }
 
         .main-content {
-            margin-top: 80px;
+            margin-top: 120px;
             padding: 20px;
+            width: 100%;
             max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
         }
 
         .search-container {
             width: 100%;
-            max-width: 600px;
+            max-width: min(600px, 90vw);
             position: relative;
             margin: 20px auto;
         }
 
         #search-input {
-            width: 600px;
+            width: 100%;
+            max-width: min(600px, 90vw);
             height: 36px;
             padding: 8px 12px;
             border: 2px solid var(--border-color);
@@ -147,6 +151,8 @@
             font-size: 16px;
             transition: all 0.3s ease;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1;
         }
 
         .search-label {
@@ -797,6 +803,45 @@
             color: var(--text-color);
             opacity: 0.7;
         }
+
+        .modal-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-color);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-view img {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--button-bg);
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px var(--shadow-color);
+            z-index: 2001;
+        }
     </style>
 </head>
 <body>
@@ -856,15 +901,15 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons" id="action-buttons">
-                <button class="action-button" id="view-button">
+                <button class="action-button" id="view-button" data-action="view">
                     <img src="images/icons/view.svg" alt="View">
                     <span class="tooltip">View full size</span>
                 </button>
-                <button class="action-button" id="download-button">
+                <button class="action-button" id="download-button" data-action="download">
                     <img src="images/icons/download.svg" alt="Download">
                     <span class="tooltip">Download image</span>
                 </button>
-                <button class="action-button" id="email-button">
+                <button class="action-button" id="email-button" data-action="email">
                     <img src="images/icons/email.svg" alt="Email">
                     <span class="tooltip">Email image</span>
                 </button>
@@ -911,303 +956,448 @@
             "White Wolf, starry night, guardian, powerful, majestic"
         ];
 
-        // Theme handling
-        const theme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
+        /**
+         * Generates an image based on the current prompt and background settings
+         * @param {boolean} withBackground - Whether to generate image with background
+         * @returns {Promise<void>}
+         */
+        async function generateImage(withBackground = false) {
+            if (isGenerating) return;
 
-        const themeToggle = document.querySelector('.theme-toggle');
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-
-        // Initialize variables
-        let isGenerating = false;
-        let promptHistory = JSON.parse(localStorage.getItem('promptHistory') || '[]');
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize core UI elements
             const searchInput = document.getElementById('search-input');
-            const clearButton = document.getElementById('clear-button');
-            const actionButtons = document.getElementById('action-buttons');
-            const generateBtn = document.getElementById('generate-btn');
-            const withbgBtn = document.getElementById('withbg-btn');
-            const luckyBtn = document.getElementById('lucky-btn');
-            const viewButton = document.getElementById('view-button');
-            const emailButton = document.getElementById('email-button');
-            const deleteButton = document.getElementById('delete-button');
-            const searchHistory = document.getElementById('search-history');
+            const result = document.getElementById('result');
+            const prompt = searchInput.value.trim();
+            
+            if (!prompt) {
+                showNotification('Please enter a prompt', true);
+                return;
+            }
 
-            // Helper functions
-            async function generateImage(withBackground = false) {
-                if (isGenerating) return;
+            isGenerating = true;
 
-                const searchInput = document.getElementById('search-input');
-                const result = document.getElementById('result');
-                const prompt = searchInput.value.trim();
+            // Show loading animation
+            result.innerHTML = `
+                <div class="loading">
+                    <div class="perspective-container">
+                        <div class="cube">
+                            <div class="cube-face front"></div>
+                            <div class="cube-face back"></div>
+                            <div class="cube-face right"></div>
+                            <div class="cube-face left"></div>
+                            <div class="cube-face top"></div>
+                            <div class="cube-face bottom"></div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 20px; color: var(--text-color);">Generating your image...</p>
+                </div>
+            `;
+
+            // Hide action buttons during generation
+            if (actionButtons) {
+                actionButtons.forEach(button => button.style.display = 'none');
+            }
+
+            try {
+                const response = await fetch(!withBackground ? 
+                    'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2' : 
+                    'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    mode: 'cors',
+                    credentials: 'omit',
+                    body: JSON.stringify({ prompt })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Generation failed');
+                }
+
+                const imageUrl = await response.text();
+                updatePromptHistory(prompt);
+                displayImage(imageUrl);
                 
-                if (!prompt) {
-                    showNotification('Please enter a prompt', true);
+                // Show action buttons after successful generation
+                if (actionButtons) {
+                    actionButtons.forEach(button => button.style.display = 'flex');
+                }
+            } catch (error) {
+                console.error('Generation error:', error);
+                result.innerHTML = `
+                    <div class="error-message">
+                        Failed to generate image. Please try again.
+                    </div>
+                `;
+                showNotification(error.message || 'Failed to generate image', true);
+            } finally {
+                isGenerating = false;
+            }
+        }
+
+        // Set up generation buttons
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                if (!isGenerating) {
+                    generateImage(false);
+                }
+            });
+        }
+
+        if (withbgBtn) {
+            withbgBtn.addEventListener('click', () => {
+                if (!isGenerating) {
+                    generateImage(true);
+                }
+            });
+        }
+
+        if (luckyBtn) {
+            luckyBtn.addEventListener('click', () => {
+                if (!isGenerating) {
+                    searchInput.value = getApprovedPrompt();
+                    generateImage(false);
+                }
+            });
+        }
+
+        // Core action buttons setup
+        if (viewButton) {
+            viewButton.addEventListener('click', () => {
+                const img = document.querySelector('#result img');
+                if (img) {
+                    window.open(img.src, '_blank');
+                }
+            });
+        }
+
+        const downloadButton = document.getElementById('download-button');
+        if (downloadButton) {
+            downloadButton.addEventListener('click', async () => {
+                const img = document.querySelector('#result img');
+                if (!img) {
+                    showNotification('No image to download!', true);
                     return;
                 }
 
-                isGenerating = true;
-
-                // Show loading animation
-                result.innerHTML = `
-                    <div class="loading">
-                        <div class="perspective-container">
-                            <div class="cube">
-                                <div class="cube-face front"></div>
-                                <div class="cube-face back"></div>
-                                <div class="cube-face right"></div>
-                                <div class="cube-face left"></div>
-                                <div class="cube-face top"></div>
-                                <div class="cube-face bottom"></div>
-                            </div>
-                        </div>
-                        <p style="margin-top: 20px; color: var(--text-color);">Generating your image...</p>
-                    </div>
-                `;
-
-                // Hide action buttons during generation
-                if (actionButtons) {
-                    actionButtons.style.display = 'none';
-                }
-
                 try {
-                    const response = await fetch(!withBackground ? 
-                        'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2' : 
-                        'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Origin': window.location.origin
-                        },
-                        mode: 'cors',
-                        credentials: 'omit',
-                        body: JSON.stringify({ prompt })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Generation failed');
-                    }
-
-                    const imageUrl = await response.text();
-                    updatePromptHistory(prompt);
-                    displayImage(imageUrl);
+                    const response = await fetch(img.src);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const now = new Date();
+                    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
                     
-                    // Show action buttons after successful generation
-                    if (actionButtons) {
-                        actionButtons.style.display = 'flex';
-                    }
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Void-Box-${timestamp}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
                 } catch (error) {
-                    console.error('Generation error:', error);
-                    result.innerHTML = `
-                        <div class="error-message">
-                            Failed to generate image. Please try again.
-                        </div>
-                    `;
-                    showNotification(error.message || 'Failed to generate image', true);
-                } finally {
-                    isGenerating = false;
+                    console.error('Download error:', error);
+                    showNotification('Failed to download image', true);
                 }
-            }
+            });
+        }
 
-            // Set up generation buttons
-            if (generateBtn) {
-                generateBtn.addEventListener('click', () => {
-                    if (!isGenerating) {
-                        generateImage(false);
+        if (emailButton) {
+            const emailContainer = document.getElementById('email-container');
+            const emailInput = document.getElementById('email-input');
+            const sendEmailButton = document.getElementById('send-email');
+            const cancelEmailButton = document.getElementById('cancel-email');
+
+            emailButton.addEventListener('click', () => {
+                if (emailContainer) {
+                    emailContainer.style.display = emailContainer.style.display === 'block' ? 'none' : 'block';
+                    if (emailContainer.style.display === 'block' && emailInput) {
+                        emailInput.focus();
                     }
+                }
+            });
+
+            if (cancelEmailButton) {
+                cancelEmailButton.addEventListener('click', () => {
+                    emailContainer.style.display = 'none';
+                    emailInput.value = '';
                 });
             }
 
-            if (withbgBtn) {
-                withbgBtn.addEventListener('click', () => {
-                    if (!isGenerating) {
-                        generateImage(true);
-                    }
-                });
-            }
-
-            if (luckyBtn) {
-                luckyBtn.addEventListener('click', () => {
-                    if (!isGenerating) {
-                        searchInput.value = getApprovedPrompt();
-                        generateImage(false);
-                    }
-                });
-            }
-
-            // Core action buttons setup
-            if (viewButton) {
-                viewButton.addEventListener('click', () => {
-                    const img = document.querySelector('#result img');
-                    if (img) {
-                        window.open(img.src, '_blank');
-                    }
-                });
-            }
-
-            const downloadButton = document.getElementById('download-button');
-            if (downloadButton) {
-                downloadButton.addEventListener('click', async () => {
-                    const img = document.querySelector('#result img');
-                    if (!img) {
-                        showNotification('No image to download!', true);
+            if (sendEmailButton) {
+                sendEmailButton.addEventListener('click', () => {
+                    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                    if (!emailRegex.test(emailInput.value)) {
+                        showNotification('Please enter a valid email address', true);
                         return;
                     }
 
-                    try {
-                        const response = await fetch(img.src);
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const now = new Date();
-                        const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-                        
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `Void-Box-${timestamp}.png`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(url);
-                    } catch (error) {
-                        console.error('Download error:', error);
-                        showNotification('Failed to download image', true);
+                    const img = document.querySelector('#result img');
+                    if (!img) {
+                        showNotification('No image to send!', true);
+                        return;
                     }
+
+                    // Simulate email sending
+                    showNotification('Email sent successfully!');
+                    emailContainer.style.display = 'none';
+                    emailInput.value = '';
                 });
             }
+        }
 
-            if (emailButton) {
-                const emailContainer = document.getElementById('email-container');
-                const emailInput = document.getElementById('email-input');
-                const sendEmailButton = document.getElementById('send-email');
-                const cancelEmailButton = document.getElementById('cancel-email');
+        // Delete functionality
+        function addCloseButton() {
+            const resultContainer = document.getElementById('result');
+            if (!resultContainer) return;
 
-                emailButton.addEventListener('click', () => {
-                    if (emailContainer) {
-                        emailContainer.style.display = emailContainer.style.display === 'block' ? 'none' : 'block';
-                        if (emailContainer.style.display === 'block' && emailInput) {
-                            emailInput.focus();
-                        }
-                    }
-                });
-
-                if (cancelEmailButton) {
-                    cancelEmailButton.addEventListener('click', () => {
-                        emailContainer.style.display = 'none';
-                        emailInput.value = '';
-                    });
-                }
-
-                if (sendEmailButton) {
-                    sendEmailButton.addEventListener('click', () => {
-                        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-                        if (!emailRegex.test(emailInput.value)) {
-                            showNotification('Please enter a valid email address', true);
-                            return;
-                        }
-
-                        const img = document.querySelector('#result img');
-                        if (!img) {
-                            showNotification('No image to send!', true);
-                            return;
-                        }
-
-                        // Simulate email sending
-                        showNotification('Email sent successfully!');
-                        emailContainer.style.display = 'none';
-                        emailInput.value = '';
-                    });
-                }
+            // Remove existing close button if any
+            const existingButton = resultContainer.querySelector('.close-button');
+            if (existingButton) {
+                existingButton.remove();
             }
 
-            // Delete functionality
-            function addCloseButton() {
-                const resultContainer = document.getElementById('result');
-                if (!resultContainer) return;
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close-button';
+            closeButton.innerHTML = '×';
+            
+            closeButton.addEventListener('click', () => {
+                resultContainer.innerHTML = '';
+                showNotification('Image deleted');
+            });
 
-                // Remove existing close button if any
-                const existingButton = resultContainer.querySelector('.close-button');
-                if (existingButton) {
-                    existingButton.remove();
-                }
+            resultContainer.appendChild(closeButton);
+        }
 
-                const closeButton = document.createElement('button');
-                closeButton.className = 'close-button';
-                closeButton.innerHTML = '×';
+        // Add close button when displaying image
+        /**
+         * Displays an image either in the main result area or in a modal preview
+         * @param {string} imageUrl - URL of the image to display
+         * @param {boolean} isPreview - If true, shows in modal; if false, shows in main area
+         */
+        function displayImage(imageUrl, isPreview = false) {
+            const result = document.getElementById('result');
+            if (isPreview) {
+                // Modal view for "View" button clicks
+                const modalView = document.createElement('div');
+                modalView.className = 'modal-view';
                 
-                closeButton.addEventListener('click', () => {
-                    resultContainer.innerHTML = '';
-                    showNotification('Image deleted');
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'modal-close';
+                closeBtn.innerHTML = '×';
+                closeBtn.onclick = () => {
+                    modalView.remove();
+                    isGenerating = false; // Reset generating state
+                };
+                
+                modalView.appendChild(img);
+                modalView.appendChild(closeBtn);
+                document.body.appendChild(modalView);
+                
+                // Prevent default save-as behavior on mobile
+                img.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
                 });
-
-                resultContainer.appendChild(closeButton);
-            }
-
-            // Add close button when displaying image
-            function displayImage(imageUrl) {
-                const result = document.getElementById('result');
+                
+                // Close on background click
+                modalView.addEventListener('click', (e) => {
+                    if (e.target === modalView) {
+                        modalView.remove();
+                        isGenerating = false; // Reset generating state
+                    }
+                });
+            } else {
+                // Normal display in the result area
                 if (result) {
                     result.innerHTML = `<img src="${imageUrl}" alt="Generated image">`;
                     addCloseButton();
                 }
             }
+        }
 
-            // Set up search input
-            if (searchInput) {
-                console.log('Setting up search input listeners');
-                searchInput.addEventListener('focus', () => {
-                    console.log('Search input focused');
-                    if (promptHistory.length > 0) {
-                        searchHistory.classList.add('active');
+        // Set up action buttons
+        actionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const action = button.getAttribute('data-action');
+                const imageUrl = document.querySelector('#result img')?.src;
+                
+                if (imageUrl) {
+                    switch(action) {
+                        case 'view':
+                            displayImage(imageUrl, true); // Pass true for preview mode
+                            break;
+                        case 'download':
+                            downloadImage(imageUrl);
+                            break;
+                        case 'email':
+                            showEmailForm(imageUrl);
+                            break;
                     }
-                });
-
-                searchInput.addEventListener('blur', () => {
-                    console.log('Search input blurred');
-                    setTimeout(() => {
-                        searchHistory.classList.remove('active');
-                    }, 200);
-                });
-
-                searchInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !isGenerating) {
-                        generateImage(false);
-                    }
-                });
-            }
-
-            // Set up clear button
-            if (clearButton) {
-                console.log('Setting up clear button');
-                clearButton.addEventListener('click', () => {
-                    if (searchInput) {
-                        searchInput.value = '';
-                        searchInput.focus();
-                    }
-                });
-
-                // Show/hide clear button based on input content
-                searchInput.addEventListener('input', () => {
-                    clearButton.style.display = searchInput.value ? 'flex' : 'none';
-                });
-            }
-
-            // Initialize clear button visibility
-            if (searchInput && clearButton) {
-                clearButton.style.display = searchInput.value ? 'flex' : 'none';
-            }
-
-            // Initialize prompt history
-            displayPromptHistory();
+                }
+            });
         });
 
-        // Helper functions
+        // Reset generating state when returning to main window
+        window.addEventListener('focus', () => {
+            isGenerating = false;
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        });
+
+        // Set up search input
+        if (searchInput) {
+            console.log('Setting up search input listeners');
+            searchInput.addEventListener('focus', () => {
+                console.log('Search input focused');
+                if (promptHistory.length > 0) {
+                    searchHistory.classList.add('active');
+                }
+            });
+
+            searchInput.addEventListener('blur', () => {
+                console.log('Search input blurred');
+                setTimeout(() => {
+                    searchHistory.classList.remove('active');
+                }, 200);
+            });
+
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !isGenerating) {
+                    generateImage(false);
+                }
+            });
+        }
+
+        // Set up clear button
+        if (clearButton) {
+            console.log('Setting up clear button');
+            clearButton.addEventListener('click', () => {
+                if (searchInput) {
+                    searchInput.value = '';
+                    searchInput.focus();
+                }
+            });
+
+            // Show/hide clear button based on input content
+            searchInput.addEventListener('input', () => {
+                clearButton.style.display = searchInput.value ? 'flex' : 'none';
+            });
+        }
+
+        // Initialize clear button visibility
+        if (searchInput && clearButton) {
+            clearButton.style.display = searchInput.value ? 'flex' : 'none';
+        }
+
+        // Initialize prompt history
+        displayPromptHistory();
+
+        /**
+         * Downloads the generated image with a timestamped filename
+         * @param {string} imageUrl - URL of the image to download
+         */
+        function downloadImage(imageUrl) {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.download = `voidbox-image-${timestamp}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /**
+         * Shows the email sharing form and handles the email submission
+         * @param {string} imageUrl - URL of the image to share
+         */
+        function showEmailForm(imageUrl) {
+            const emailContainer = document.getElementById('email-container');
+            if (emailContainer) {
+                emailContainer.style.display = 'block';
+                const emailForm = document.getElementById('email-form');
+                if (emailForm) {
+                    emailForm.onsubmit = async (e) => {
+                        e.preventDefault();
+                        const emailInput = document.getElementById('email-input');
+                        if (emailInput && emailInput.value) {
+                            try {
+                                const response = await fetch('/share', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        email: emailInput.value,
+                                        imageUrl: imageUrl
+                                    })
+                                });
+                                
+                                if (response.ok) {
+                                    showNotification('Email sent successfully!');
+                                    emailContainer.style.display = 'none';
+                                    emailInput.value = '';
+                                } else {
+                                    throw new Error('Failed to send email');
+                                }
+                            } catch (error) {
+                                console.error('Email error:', error);
+                                showNotification('Failed to send email', true);
+                            }
+                        }
+                    };
+                }
+            }
+        }
+
+        /**
+         * Adds a close button to the current image display
+         */
+        function addCloseButton() {
+            const resultContainer = document.getElementById('result');
+            if (!resultContainer) return;
+
+            // Remove existing close button if any
+            const existingButton = resultContainer.querySelector('.close-button');
+            if (existingButton) {
+                existingButton.remove();
+            }
+
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close-button';
+            closeButton.innerHTML = '×';
+            
+            closeButton.addEventListener('click', () => {
+                resultContainer.innerHTML = '';
+                showNotification('Image deleted');
+            });
+
+            resultContainer.appendChild(closeButton);
+        }
+
+        /**
+         * Shows a notification message to the user
+         * @param {string} message - Message to display
+         * @param {boolean} isError - If true, shows as error; if false, shows as success
+         */
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        /**
+         * Updates the prompt history in local storage
+         * @param {string} prompt - Prompt to add to history
+         */
         function updatePromptHistory(prompt) {
             console.log('Updating prompt history:', prompt);
             if (prompt && !promptHistory.includes(prompt)) {
@@ -1220,6 +1410,9 @@
             }
         }
 
+        /**
+         * Displays the prompt history UI
+         */
         function displayPromptHistory() {
             console.log('Displaying prompt history');
             const searchHistory = document.getElementById('search-history');
@@ -1241,19 +1434,40 @@
             }
         }
 
+        /**
+         * Gets a random approved prompt from the list
+         * @returns {string} Random approved prompt
+         */
         function getApprovedPrompt() {
             return APPROVED_PROMPTS[Math.floor(Math.random() * APPROVED_PROMPTS.length)];
         }
 
-        function showNotification(message, isError = false) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${isError ? 'error' : 'success'}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+        /**
+         * Toggles the theme between light and dark mode
+         */
+        function toggleTheme() {
+            document.body.setAttribute('data-theme', 
+                document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+            );
+            localStorage.setItem('theme', document.body.getAttribute('data-theme'));
         }
+
+        /**
+         * Closes the email form
+         */
+        function closeEmailForm() {
+            const emailContainer = document.getElementById('email-container');
+            if (emailContainer) {
+                emailContainer.style.display = 'none';
+            }
+        }
+
+        // Initialize theme
+        document.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
+
+        // Initialize theme from localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
     </script>
 </body>
 </html>
