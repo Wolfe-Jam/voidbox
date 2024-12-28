@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoidBox</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="js/prompts.js"></script>
+    <script src="js/approved-prompts.js"></script>
+    <script src="js/prompt-system.js"></script>
     <style>
         :root {
-            --primary-color: #1a73e8;
+            --primary-color: #1976d2;
             --hover-color: #1557b0;
             --bg-color: #ffffff;
             --text-color: #202124;
@@ -17,6 +20,7 @@
             --button-bg: #f8f9fa;
             --button-hover: #f1f3f4;
             --icon-filter: none;
+            --placeholder-color: rgba(25, 118, 210, 0.6);
         }
 
         [data-theme="dark"] {
@@ -28,6 +32,7 @@
             --button-bg: #303134;
             --button-hover: #3c4043;
             --icon-filter: invert(1);
+            --placeholder-color: rgba(66, 165, 245, 0.6);
         }
 
         body {
@@ -97,8 +102,8 @@
         .page-title {
             font-family: 'Inter', sans-serif;
             font-weight: bold;
-            font-size: 12px;
-            margin: 1px 0 12px 0;
+            font-size: 14px;
+            margin: 1px 0 17px 0;
             padding: 0;
             text-align: center;
             color: var(--text-color);
@@ -120,32 +125,20 @@
         }
 
         .search-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
             color: var(--text-color);
-            font-size: 14px;
+            opacity: 0.7;
+            text-align: center;
             margin-bottom: 8px;
-            opacity: 0.8;
         }
 
-        .search-input-wrapper {
+        .search-box {
+            position: relative;
             display: flex;
             align-items: center;
             width: 100%;
             max-width: 584px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 8px 16px;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px var(--shadow-color);
-        }
-
-        .search-input-wrapper:hover {
-            box-shadow: 0 1px 6px var(--shadow-color);
-        }
-
-        .search-input-wrapper:focus-within {
-            box-shadow: 0 1px 6px var(--shadow-color);
-            border-color: transparent;
         }
 
         .search-input {
@@ -159,9 +152,79 @@
             margin: 0 8px;
         }
 
-        .search-input::placeholder {
+        #search-input::-webkit-input-placeholder {
+            color: rgba(25, 118, 210, 0.6) !important;
+        }
+        #search-input::-moz-placeholder {
+            color: rgba(25, 118, 210, 0.6) !important;
+        }
+        #search-input:-ms-input-placeholder {
+            color: rgba(25, 118, 210, 0.6) !important;
+        }
+        
+        [data-theme="dark"] #search-input::-webkit-input-placeholder {
+            color: rgba(66, 165, 245, 0.6) !important;
+        }
+        [data-theme="dark"] #search-input::-moz-placeholder {
+            color: rgba(66, 165, 245, 0.6) !important;
+        }
+        [data-theme="dark"] #search-input:-ms-input-placeholder {
+            color: rgba(66, 165, 245, 0.6) !important;
+        }
+
+        .search-input:focus {
+            outline: 2px solid rgba(25, 118, 210, 0.6);
+        }
+
+        [data-theme="dark"] .search-input:focus {
+            outline: 2px solid rgba(66, 165, 245, 0.6);
+        }
+
+        .search-input::selection {
+            background-color: rgba(25, 118, 210, 0.3);
             color: var(--text-color);
+        }
+
+        [data-theme="dark"] .search-input::selection {
+            background-color: rgba(66, 165, 245, 0.3);
+            color: var(--text-color);
+        }
+
+        /* For Firefox */
+        .search-input::-moz-selection {
+            background-color: rgba(25, 118, 210, 0.3);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .search-input::-moz-selection {
+            background-color: rgba(66, 165, 245, 0.3);
+            color: var(--text-color);
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .icon-button:hover {
+            opacity: 1;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-color);
+        }
+
+        .icon-button img {
+            filter: var(--icon-filter);
         }
 
         .clear-button {
@@ -174,10 +237,6 @@
             margin-right: -8px;
         }
 
-        .clear-button.visible {
-            display: block;
-        }
-
         .clear-button:hover {
             opacity: 0.8;
         }
@@ -188,75 +247,17 @@
             filter: var(--icon-filter);
         }
 
-        .add-background-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 28px;
-            height: 28px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-
-        .add-background-btn:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .plus-icon {
-            width: 20px;
-            height: 20px;
-            position: relative;
-        }
-
-        .plus-icon::before,
-        .plus-icon::after {
-            content: '';
-            position: absolute;
-            background-color: var(--text-color);
-            transition: background-color 0.2s;
-        }
-
-        .plus-icon::before {
-            width: 2px;
-            height: 20px;
-            left: 9px;
-            top: 0;
-        }
-
-        .plus-icon::after {
-            width: 20px;
-            height: 2px;
-            left: 0;
-            top: 9px;
-        }
-
-        .tooltip {
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
+        .prompt-structure {
+            font-family: 'Inter', sans-serif;
             font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
+            color: var(--text-color);
+            opacity: 0.7;
+            text-align: center;
+            margin-top: 8px;
         }
 
-        .button:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
+        .prompt-structure span {
+            opacity: 0.5;
         }
 
         .button {
@@ -606,6 +607,51 @@
                 width: 100%;
             }
         }
+
+        .button-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        
+        .button img {
+            filter: brightness(0) invert(1);
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Show tooltips on hover for both buttons and action buttons */
+        .button:hover .tooltip,
+        .action-button:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Position tooltips for action buttons */
+        .action-button {
+            position: relative;
+        }
+
+        .action-button .tooltip {
+            bottom: -25px;
+        }
     </style>
 </head>
 <body>
@@ -621,7 +667,7 @@
         
         <div class="search-container">
             <div class="search-label">Describe your desired image</div>
-            <div class="search-input-wrapper">
+            <div class="search-box">
                 <input 
                     type="text" 
                     class="search-input" 
@@ -631,10 +677,14 @@
                     autocorrect="off"
                     spellcheck="false"
                     tabindex="1"
+                    style="--placeholder-color: rgba(25, 118, 210, 0.6); color: var(--text-color);"
                 >
-                <button class="clear-button" id="clear-button" tabindex="2">
+                <button class="clear-button" id="clear-button" tabindex="3">
                     <img src="images/icons/close.svg" alt="Clear">
                 </button>
+            </div>
+            <div class="prompt-structure">
+                <strong>Subject</strong> | <strong>Description</strong> | Activity/Props | <strong>Style</strong> | Vibe | Color
             </div>
             <div class="search-history" id="search-history"></div>
         </div>
@@ -642,15 +692,15 @@
         <div class="buttons">
             <button class="button" id="generate">
                 Generate
-                <span class="tooltip">with background</span>
+                <span class="tooltip">Generate with background</span>
             </button>
             <button class="button" id="withbg">
                 ZBG
-                <span class="tooltip">Zero background</span>
+                <span class="tooltip">Generate without background</span>
             </button>
             <button class="button" id="lucky">
                 Randomize!
-                <span class="tooltip">ZBG with fun prompt</span>
+                <span class="tooltip">Random prompt without background</span>
             </button>
         </div>
 
@@ -662,14 +712,17 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons" id="action-buttons">
-                <button class="action-button" id="view-button" aria-label="View full image">
+                <button class="action-button" id="view-button">
                     <img src="images/icons/view.svg" alt="View">
+                    <span class="tooltip">View full size</span>
                 </button>
-                <button class="action-button" id="download-button" aria-label="Download image">
+                <button class="action-button" id="download-button">
                     <img src="images/icons/download.svg" alt="Download">
+                    <span class="tooltip">Download image</span>
                 </button>
-                <button class="action-button" id="email-button" aria-label="Email image">
+                <button class="action-button" id="email-button">
                     <img src="images/icons/email.svg" alt="Email">
+                    <span class="tooltip">Email image</span>
                 </button>
             </div>
 
@@ -790,36 +843,53 @@
                 });
             }
 
-            // Random creative prompts
-            const randomPrompts = [
-                "White Wolf, blue eyes, staring, portrait, vintage, 8 flat colors, magical",
-                "Cosmic jellyfish in deep space, bioluminescent",
-                "Steampunk owl with brass gears, Victorian era",
-                "Crystal forest at dawn, prismatic light",
-                "Desert nomad with wind-swept robes, golden hour",
-                "Ancient tree of life, mystical glow",
-                "Cyberpunk samurai, neon lights",
-                "Arctic fox in northern lights, ethereal",
-                "Dragon made of constellation stars, cosmic",
-                "Underwater city in a giant bubble, art deco style",
-                "Phoenix rising from digital flames, synthwave",
-                "Floating islands with waterfalls, studio ghibli style",
-                "Time-traveling train through dimensions, surreal"
-            ];
+            // Approved prompts
+            const approvedPrompts = APPROVED_PROMPTS;
+
+            function getApprovedPrompt() {
+                return approvedPrompts[Math.floor(Math.random() * approvedPrompts.length)];
+            }
+
+            // Premium generation - uses approved prompts only
+            function generatePremiumPrompt() {
+                return getApprovedPrompt().toString();
+            }
+
+            // Free dice roll - more experimental combinations
+            function generateExperimentalPrompt() {
+                const subject = getRandomElement(prompts.getAllSubjects());
+                const description = getRandomElement(prompts.descriptions);
+                const activity = getRandomElement(prompts.activities);
+                const style = getRandomElement(prompts.styles);
+                const vibe = getRandomElement(prompts.vibes);
+                const color = getRandomElement(prompts.colors);
+                
+                return `${description} ${subject} ${activity}, ${style} ${vibe}, ${color}`;
+            }
 
             // Button event listeners
             if (generateBtn) {
                 generateBtn.addEventListener('click', () => generateImage(true));
             }
+
             if (withbgBtn) {
                 withbgBtn.addEventListener('click', () => generateImage(false));
             }
+
             if (luckyBtn) {
                 luckyBtn.addEventListener('click', () => {
                     if (isGenerating) return;
-                    const randomIndex = Math.floor(Math.random() * randomPrompts.length);
-                    searchInput.value = randomPrompts[randomIndex];
+                    // Use fixed prompts for the Randomize button (tested combinations)
+                    searchInput.value = getFixedPrompt().toString();
                     generateImage(false);
+                });
+            }
+
+            // Dice roll uses mixed prompts (more experimental)
+            if (diceButton) {
+                diceButton.addEventListener('click', () => {
+                    searchInput.value = getMixedPrompt().toString();
+                    searchInput.focus();
                 });
             }
 
