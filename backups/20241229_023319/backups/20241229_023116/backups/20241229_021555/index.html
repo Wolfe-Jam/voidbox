@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#FFFFFF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>voidbox</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com/3.3.5"></script>
+    <script src="main.js" type="module" defer></script>
+    <style>
+        /* Mobile-first base styles */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            font-family: 'Inter', sans-serif;
+        }
+        input, button {
+            font-size: 16px;
+        }
+        .safe-area-top {
+            padding-top: env(safe-area-inset-top, 20px);
+        }
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        /* Logo styles */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .logo-svg {
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.15));
+            transition: transform 0.3s ease;
+        }
+        .logo-svg:hover {
+            transform: scale(1.02);
+        }
+
+        /* 3D Cube Animation */
+        .perspective-container {
+            perspective: 1000px;
+            perspective-origin: 50% 50%;
+            transform-style: preserve-3d;
+        }
+
+        .cube {
+            width: 22px;
+            height: 22px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            margin: 30px auto;
+            transform-origin: center center;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: black;
+            animation: colorPulse 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backface-visibility: visible;
+            transform-origin: center center;
+        }
+
+        .front  { transform: translateZ(11px); }
+        .back   { transform: translateZ(-11px) rotateY(180deg); }
+        .right  { transform: translateX(11px) rotateY(90deg); }
+        .left   { transform: translateX(-11px) rotateY(-90deg); }
+        .top    { transform: translateY(-11px) rotateX(90deg); }
+        .bottom { transform: translateY(11px) rotateX(-90deg); }
+
+        @keyframes rotate {
+            0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            20% { transform: rotateX(90deg) rotateY(45deg) rotateZ(45deg); }
+            40% { transform: rotateX(180deg) rotateY(135deg) rotateZ(90deg); }
+            60% { transform: rotateX(270deg) rotateY(225deg) rotateZ(135deg); }
+            80% { transform: rotateX(360deg) rotateY(315deg) rotateZ(180deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        @keyframes colorPulse {
+            0%, 100% { 
+                background: black;
+                box-shadow: none;
+            }
+            20% { 
+                background: #ff0000;
+                box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
+            }
+            40% { 
+                background: #00ff00;
+                box-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00;
+            }
+            60% { 
+                background: #0000ff;
+                box-shadow: 0 0 15px #0000ff, 0 0 30px #0000ff;
+            }
+            80% { 
+                background: #ff00ff;
+                box-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-full bg-surface text-on-surface">
+    <!-- Main container with safe area padding -->
+    <div class="min-h-screen px-4 pt-safe-top pb-safe-bottom">
+        <!-- Header -->
+        <header class="py-6 text-center">
+            <div class="logo-container">
+                <img src="/icon.svg" alt="voidbox" class="logo-svg">
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="max-w-2xl mx-auto">
+            <!-- Form section -->
+            <div class="mt-8">
+                <form id="promptForm" class="w-full max-w-xl mx-auto px-4 space-y-6 flex flex-col items-center">
+                    <!-- Image type selector -->
+                    <div id="imageTypeContainer" class="mb-4 space-y-2">
+                        <!-- Radio buttons will be inserted here by JavaScript -->
+                    </div>
+                    
+                    <!-- Prompt input -->
+                    <div class="w-full">
+                        <p class="text-sm text-gray-500 mb-2 px-1">Enter your prompt, try our format below</p>
+                        <input
+                            type="text"
+                            id="prompt"
+                            name="prompt"
+                            required
+                            list="promptHistory"
+                            placeholder="black cat with green eyes laughing in a top hat. cartoon, bright colors, funny"
+                            class="w-full p-4 text-mobile-input border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent mb-3 placeholder:text-gray-400 focus:placeholder:text-black focus:placeholder:font-medium"
+                            autocomplete="off"
+                        >
+                        <datalist id="promptHistory"></datalist>
+                        <p class="text-sm text-gray-500 font-mono mb-3 px-1">
+                            <span class="required-category">Subject</span> | 
+                            <span class="required-category">Description</span> | 
+                            Activity | Props | 
+                            <span class="required-category">Style</span> | 
+                            Color | Vibe
+                        </p>
+                    </div>
+
+                    <!-- Generate button -->
+                    <button 
+                        type="submit" 
+                        class="w-full sm:w-auto px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-900 transition-colors mt-6"
+                    >
+                        Generate Image
+                    </button>
+                </form>
+
+                <!-- Prompt tips toggle -->
+                <div class="mt-4 text-center">
+                    <button 
+                        id="promptTipsToggle" 
+                        class="dropdown-toggle inline-flex items-center gap-1 transition-colors mb-2"
+                    >
+                        Prompt Tips
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Prompt tips content -->
+                <div id="promptTips" class="hidden mt-6 p-4 bg-white rounded-lg shadow-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-medium">Prompt Tips</h3>
+                        <button id="closeTips" class="text-gray-500 hover:text-gray-700">×</button>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>• Start with the main subject (e.g., "cat", "landscape", "portrait")</li>
+                        <li>• Add key details (e.g., "black fur", "snowy mountains", "young woman")</li>
+                        <li>• Include action or mood (e.g., "jumping", "peaceful", "dramatic")</li>
+                        <li>• Specify style (e.g., "cartoon", "realistic", "watercolor")</li>
+                        <li>• Add color preferences (e.g., "vibrant", "pastel", "monochrome")</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Loading state -->
+            <div id="loadingState" class="hidden mt-8 text-center">
+                <div class="perspective-container">
+                    <div class="cube">
+                        <div class="cube-face front"></div>
+                        <div class="cube-face back"></div>
+                        <div class="cube-face right"></div>
+                        <div class="cube-face left"></div>
+                        <div class="cube-face top"></div>
+                        <div class="cube-face bottom"></div>
+                    </div>
+                </div>
+                <p class="mt-4 text-sm">Generating your image...</p>
+            </div>
+
+            <!-- Image display -->
+            <div id="imageDisplay" class="hidden mt-8">
+                <div class="relative bg-white rounded-lg shadow-lg overflow-hidden">
+                    <button id="deleteButton" class="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-black hover:bg-gray-600 text-white text-2xl transition-colors duration-200" aria-label="Delete image">×</button>
+                    <img id="generatedImage" class="w-full h-auto" alt="Generated image">
+                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+                        <div class="flex justify-end gap-2">
+                            <button id="viewFullImage" class="px-3 py-2 bg-white text-black rounded hover:bg-gray-100">View Full</button>
+                            <button id="downloadImage" class="px-3 py-2 bg-white text-black rounded hover:bg-gray-100">Download</button>
+                            <button id="emailButton" class="px-3 py-2 bg-white text-black rounded hover:bg-gray-100">Email</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email form -->
+            <div id="emailForm" class="hidden mt-4">
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <input
+                        type="email"
+                        id="emailInput"
+                        placeholder="Enter email address"
+                        class="w-full p-2 border rounded mb-2"
+                    >
+                    <button
+                        id="sendEmailButton"
+                        disabled
+                        class="w-full p-2 bg-black text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Send Image
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-12 py-6 text-center text-sm text-gray-600">
+            <p>2024 Wolfe James LLC. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

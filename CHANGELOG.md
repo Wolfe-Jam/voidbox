@@ -1,4 +1,10 @@
 
+## [v1.1.1] - 2024-12-29
+
+### Changes
+- Synchronized version numbers across package.json and index.html
+
+
 ## [v1.1.2] - 2024-12-29
 
 ### Changes

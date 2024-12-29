@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Get the commit message from the user, default to timestamp if none provided
+if [ -z "$1" ]; then
+    COMMIT_MSG="Update $(date '+%Y-%m-%d %H:%M:%S')"
+else
+    COMMIT_MSG="$1"
+fi
+
+echo "🔄 Starting local update process..."
+
+# Stage all changes
+echo "📦 Staging changes..."
+git add .
+
+# Show what's being committed
+echo "📋 Changes to be committed:"
+git status --short
+
+# Confirm with user
+read -p "❓ Proceed with commit? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "❌ Update cancelled"
+    exit 1
+fi
+
+# Commit changes
+echo "💾 Committing changes with message: $COMMIT_MSG"
+git commit -m "$COMMIT_MSG"
+
+# Push to local repository
+echo "⬆️  Pushing to local repository..."
+git push origin main
+
+echo "✅ Update complete!"

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1976d2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="images/logo.svg">
+    <title>VoidBox</title>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="images/logo.svg" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+    
+    <!-- Defer non-critical CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --hover-color: #1557b0;
+            --bg-color: #ffffff;
+            --text-color: #202124;
+            --border-color: #dfe1e5;
+            --shadow-color: rgba(32, 33, 36, 0.28);
+            --hover-bg: #f8f9fa;
+            --button-bg: #f8f9fa;
+            --button-hover: #f1f3f4;
+            --icon-filter: none;
+            --placeholder-color: rgba(25, 118, 210, 0.6);
+            --input-bg: #f8f9fa;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #202124;
+            --text-color: #e8eaed;
+            --border-color: #5f6368;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --hover-bg: #303134;
+            --button-bg: #303134;
+            --button-hover: #3c4043;
+            --icon-filter: invert(1);
+            --placeholder-color: rgba(66, 165, 245, 0.6);
+            --input-bg: #303134;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overscroll-behavior-y: contain;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(45deg, #000 50%, #fff 50%);
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            transform: rotate(180deg);
+        }
+
+        .top-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .logo {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .logo img {
+            width: 80px;
+            height: 80px;
+            transition: all 0.3s ease;
+            filter: var(--icon-filter);
+        }
+
+        .logo:hover img {
+            transform: scale(1.1);
+        }
+
+        .page-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 1px 0 17px 0;
+            padding: 0;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .main-content {
+            margin-top: 120px;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: min(600px, 90vw);
+            position: relative;
+            margin: 20px auto;
+        }
+
+        #search-input {
+            width: 100%;
+            max-width: min(600px, 90vw);
+            height: 36px;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+        }
+
+        .search-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 584px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            border-radius: 24px;
+            padding: 12px 48px 12px 20px;
+            font-size: 16px;
+            line-height: 24px;
+            color: var(--text-color);
+            background: var(--input-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.4);
+        }
+
+        [data-theme="dark"] .search-input:focus {
+            box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.4);
+        }
+
+        .search-input:not(:focus) {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .search-input:not(:focus) {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        #search-input::-webkit-input-placeholder {
+            color: rgba(25, 118, 210, 0.6) !important;
+        }
+        #search-input::-moz-placeholder {
+            color: rgba(25, 118, 210, 0.6) !important;
+        }
+        #search-input:-ms-input-placeholder {
+            color: rgba(25, 118, 210, 0.6) !important;
+        }
+        
+        [data-theme="dark"] #search-input::-webkit-input-placeholder {
+            color: rgba(66, 165, 245, 0.6) !important;
+        }
+        [data-theme="dark"] #search-input::-moz-placeholder {
+            color: rgba(66, 165, 245, 0.6) !important;
+        }
+        [data-theme="dark"] #search-input:-ms-input-placeholder {
+            color: rgba(66, 165, 245, 0.6) !important;
+        }
+
+        .search-input::selection {
+            background-color: rgba(25, 118, 210, 0.3);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .search-input::selection {
+            background-color: rgba(66, 165, 245, 0.3);
+            color: var(--text-color);
+        }
+
+        /* For Firefox */
+        .search-input::-moz-selection {
+            background-color: rgba(25, 118, 210, 0.3);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .search-input::-moz-selection {
+            background-color: rgba(66, 165, 245, 0.3);
+            color: var(--text-color);
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .icon-button:hover {
+            opacity: 1;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-color);
+        }
+
+        .icon-button img {
+            filter: var(--icon-filter);
+        }
+
+        .clear-button {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            opacity: 0.6;
+            display: none;
+            margin-right: -8px;
+        }
+
+        .clear-button:hover {
+            opacity: 0.8;
+        }
+
+        .clear-button img {
+            width: 20px;
+            height: 20px;
+            filter: var(--icon-filter);
+        }
+
+        .prompt-structure {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .prompt-structure span {
+            opacity: 0.5;
+        }
+
+        .button {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--button-bg);
+            color: var(--text-color);
+            border: 1px solid transparent;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            text-align: center;
+            white-space: nowrap;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .button:hover {
+            box-shadow: 0 1px 3px var(--shadow-color);
+            background: var(--button-hover);
+            border-color: var(--border-color);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .result-container {
+            position: relative;
+            margin-top: 32px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #result {
+            position: relative;
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        #result img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            padding: 8px;
+            margin-top: 12px;
+        }
+
+        .action-button {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-button img {
+            filter: var(--icon-filter);
+            width: 24px;
+            height: 24px;
+            transition: transform 0.2s ease;
+        }
+
+        .action-button:hover img {
+            transform: scale(1.1);
+        }
+
+        #email-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 300px;
+            backdrop-filter: blur(8px);
+            display: none;
+        }
+
+        .email-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #email-input {
+            height: 36px;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .email-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .email-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .email-send {
+            background: transparent;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .email-send:hover {
+            transform: scale(1.1);
+        }
+
+        .email-send img {
+            width: 20px;
+            height: 20px;
+            filter: invert(1);
+        }
+
+        .email-confirmation {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-confirmation.show {
+            opacity: 1;
+        }
+
+        .delete-confirm {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .delete-confirm.active {
+            display: block;
+        }
+
+        .delete-confirm-buttons {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .search-history {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-history.active {
+            display: block;
+        }
+
+        .history-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .history-item:hover {
+            background-color: var(--button-hover);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--button-bg);
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-button:hover {
+            background: var(--button-hover);
+        }
+
+        #result {
+            position: relative;
+        }
+
+        /* Mobile-first base styles */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        input, textarea {
+            user-select: text;
+        }
+
+        /* Prevent pull-to-refresh */
+        body {
+            overscroll-behavior-y: contain;
+        }
+
+        /* Optimize touch targets */
+        button, 
+        .search-input,
+        .email-input,
+        .close-button {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Prevent text size adjustment */
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Enhanced touch feedback */
+        @media (hover: none) {
+            .button:active,
+            .search-input:active,
+            .email-input:active {
+                transform: scale(0.98);
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 14px;
+            display: none;
+            z-index: 2000;
+        }
+
+        .send-success {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .send-success.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .delete-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container:hover .delete-button {
+            opacity: 1;
+        }
+
+        .delete-button:hover {
+            background: rgba(220, 38, 38, 0.8);
+        }
+
+        .delete-button.confirm-state {
+            background: rgba(220, 38, 38, 0.8);
+        }
+
+        .perspective-container {
+            perspective: 1000px;
+            perspective-origin: 50% 50%;
+            transform-style: preserve-3d;
+        }
+
+        .cube {
+            width: 22px;
+            height: 22px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            margin: 30px auto;
+            transform-origin: center center;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: var(--text-color);
+            animation: colorPulse 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backface-visibility: visible;
+            transform-origin: center center;
+        }
+
+        .front  { transform: translateZ(11px); }
+        .back   { transform: translateZ(-11px) rotateY(180deg); }
+        .right  { transform: translateX(11px) rotateY(90deg); }
+        .left   { transform: translateX(-11px) rotateY(-90deg); }
+        .top    { transform: translateY(-11px) rotateX(90deg); }
+        .bottom { transform: translateY(11px) rotateX(-90deg); }
+
+        @keyframes rotate {
+            0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            20% { transform: rotateX(90deg) rotateY(45deg) rotateZ(45deg); }
+            40% { transform: rotateX(180deg) rotateY(135deg) rotateZ(90deg); }
+            60% { transform: rotateX(270deg) rotateY(225deg) rotateZ(135deg); }
+            80% { transform: rotateX(360deg) rotateY(315deg) rotateZ(180deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .search-container {
+                width: 90%;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .button {
+                width: 100%;
+            }
+        }
+
+        .button-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        
+        .button img {
+            filter: brightness(0) invert(1);
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Show tooltips on hover for both buttons and action buttons */
+        .button:hover .tooltip,
+        .action-button:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Position tooltips for action buttons */
+        .action-button {
+            position: relative;
+        }
+
+        .action-button .tooltip {
+            bottom: -25px;
+        }
+
+        .version-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .modal-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-color);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-view img {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--button-bg);
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px var(--shadow-color);
+            z-index: 2001;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-banner">
+        <button class="theme-toggle" aria-label="Toggle theme"></button>
+        <div class="logo">
+            <img src="images/logo.svg" alt="White Wolfe Logo">
+        </div>
+    </div>
+    <div class="version-info">v1.1.0</div>
+    <div class="main-content">
+        <h1 class="page-title">Zero Background Image Generation</h1>
+        
+        <div class="search-container">
+            <div class="search-label">Describe your desired image</div>
+            <div class="search-wrapper">
+                <input 
+                    type="text"
+                    class="search-input"
+                    id="search-input"
+                    value="White Wolf, blue eyes, staring, vintage, flat color, magical"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                    tabindex="1"
+                >
+                <button class="clear-button" id="clear-button" tabindex="3">
+                    <img src="images/icons/close.svg" alt="Clear">
+                </button>
+            </div>
+            <div class="prompt-structure">
+                <strong>Subject</strong> | <strong>Description</strong> | Activity/Props | <strong>Style</strong> | Vibe | Color
+            </div>
+            <div class="search-history" id="search-history"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="button" id="generate-btn">ZBG</button>
+            <button class="button" id="withbg-btn">BG</button>
+            <button class="button" id="lucky-btn">?!?</button>
+        </div>
+
+        <div class="result-container">
+            <div id="result">
+                <img src="https://cdn.leonardo.ai/users/ee52994c-c21f-4c7f-960d-cfe74a0c176c/generations/23ef8b3c-4897-4389-8f1d-e73788e6363d/AlbedoBase_XL_White_Wolf_blue_eyes_staring_vintage_flat_color_0.png" 
+                     alt="White Wolf - Zero Background AI Generation">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons" id="action-buttons">
+                <button class="action-button" id="view-button" data-action="view">
+                    <img src="images/icons/view.svg" alt="View">
+                    <span class="tooltip">View full size</span>
+                </button>
+                <button class="action-button" id="download-button" data-action="download">
+                    <img src="images/icons/download.svg" alt="Download">
+                    <span class="tooltip">Download image</span>
+                </button>
+                <button class="action-button" id="email-button" data-action="email">
+                    <img src="images/icons/email.svg" alt="Email">
+                    <span class="tooltip">Email image</span>
+                </button>
+            </div>
+
+            <!-- Email Container -->
+            <div id="email-container">
+                <div class="email-form">
+                    <input type="email" id="email-input" class="email-input" placeholder="Email this image">
+                    <button id="send-email" class="email-send" title="Send">
+                        <img src="images/icons/send.svg" alt="Send">
+                    </button>
+                    <button id="cancel-email" class="email-cancel" title="Cancel">
+                        <img src="images/icons/close.svg" alt="Cancel">
+                    </button>
+                </div>
+                <div id="email-confirmation" class="email-confirmation">Email sent!</div>
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Popup -->
+        <div class="delete-confirm" id="delete-confirm">
+            <p>Are you sure you want to delete this image?</p>
+            <div class="delete-confirm-buttons">
+                <button class="button" onclick="deleteImage()">Delete</button>
+                <button class="button" onclick="document.querySelector('.delete-confirm').classList.remove('active')">Cancel</button>
+            </div>
+        </div>
+        
+        <div class="connection-status" id="connection-status"></div>
+    </div>
+    
+    <script src="js/main.js"></script>
+</body>
+</html>

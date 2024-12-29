@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoidBox Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #333333;
+            --hover-color: #000000;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .prompt-editor {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .editor-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .prompt-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .prompt-item {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .prompt-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .delete-btn {
+            background-color: var(--error-color);
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: var(--success-color);
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: var(--error-color);
+        }
+
+        .auth-btn {
+            background-color: var(--primary-color);
+        }
+        .auth-btn.logged-in {
+            background-color: var(--error-color);
+        }
+
+        /* Add styles for login page */
+        .login-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-color: var(--bg-color);
+        }
+
+        .login-container {
+            background: #f5f5f5;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            margin: 0 0 20px 0;
+            color: var(--text-color);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-input {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .login-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .login-button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 15px;
+            background-color: #000000;
+            color: #ffffff;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0.9;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Hide admin content by default */
+        #mainContent {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginForm" class="login-page">
+        <div class="login-container">
+            <img src="/images/voidbox-logo.svg" alt="VoidBox Logo" class="logo">
+            <h1 class="login-title">VoidBox Admin</h1>
+            <form class="login-form" onsubmit="login(); return false;">
+                <input type="password" id="adminKey" class="login-input" placeholder="Enter Admin Key" required>
+                <button type="submit" class="login-button">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer (outside of login container to be visible on all pages) -->
+    <div class="footer">
+        This area is for Authorized Users Only - Permission required from Voidbox Admin - &copy; Wolfe James LLC. All rights reserved.
+    </div>
+
+    <!-- Admin Interface -->
+    <div id="mainContent">
+        <div class="admin-header">
+            <h1>VoidBox Admin</h1>
+            <div class="button-group">
+                <button onclick="saveChanges()">Save All Changes</button>
+                <button onclick="exportToSheet()">Export to Sheet</button>
+                <button onclick="importFromSheet()">Import from Sheet</button>
+                <button onclick="location.href='/'">Back to App</button>
+                <button onclick="logout()" class="auth-btn logged-in">Logout</button>
+            </div>
+        </div>
+
+        <div class="prompt-editor">
+            <div class="editor-section">
+                <h2>Add New Prompt</h2>
+                <form id="promptForm" class="prompt-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="Professional">Professional</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="Creative">Creative</option>
+                            <option value="new">+ Add New Category</option>
+                        </select>
+                    </div>
+                    
+                    <!-- So6 Inputs -->
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" required>
+                    </div>
+                    
+                    <div class="form-group tooltip">
+                        <label for="activity">Activity</label>
+                        <span class="tooltiptext">Activity/Props</span>
+                        <input type="text" id="activity" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="style">Style</label>
+                        <input type="text" id="style" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="vibe">Vibe</label>
+                        <input type="text" id="vibe" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="color">Color</label>
+                        <input type="text" id="color" required>
+                    </div>
+
+                    <button onclick="addPrompt()">Add Prompt</button>
+                </form>
+            </div>
+
+            <div class="editor-section">
+                <h2>Existing Prompts</h2>
+                <div id="promptList" class="prompt-list">
+                    <!-- Prompts will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        let promptData = null;
+        let adminKey = localStorage.getItem('adminKey');
+
+        // Google Sheets API configuration
+        const SHEET_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+        const SHEET_API_KEY = process.env.GOOGLE_API_KEY;
+        const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+
+        // Initialize Google API
+        function initGoogleAPI() {
+            gapi.load('client:auth2', async () => {
+                try {
+                    await gapi.client.init({
+                        apiKey: SHEET_API_KEY,
+                        clientId: SHEET_CLIENT_ID,
+                        scope: SCOPES
+                    });
+                } catch (error) {
+                    console.error('Error initializing Google API:', error);
+                }
+            });
+        }
+
+        // Export prompts to Google Sheet
+        async function exportToSheet() {
+            try {
+                if (!promptData || !promptData.prompts) {
+                    throw new Error('No prompt data available to export');
+                }
+
+                const response = await fetch('/api/export-to-sheet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminKey}`
+                    },
+                    body: JSON.stringify(promptData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to export to Google Sheets');
+                }
+
+                const result = await response.json();
+                alert('Successfully exported to Google Sheets: ' + result.url);
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed: ' + (error.message || 'Google Sheets integration not configured. Please check server settings.'));
+            }
+        }
+
+        // Import prompts from Google Sheet
+        async function importFromSheet() {
+            try {
+                // Sign in
+                await gapi.auth2.getAuthInstance().signIn();
+
+                // Ask for spreadsheet ID
+                const spreadsheetId = prompt('Enter the Google Sheet ID:');
+                if (!spreadsheetId) return;
+
+                // Get sheet data
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: spreadsheetId,
+                    range: 'A:G'
+                });
+
+                const rows = response.result.values;
+                if (!rows || rows.length < 2) {
+                    throw new Error('No data found in sheet');
+                }
+
+                // Convert sheet data to prompt format
+                const categories = {};
+                for (let i = 1; i < rows.length; i++) {
+                    const [category, subject, description, activity, style, vibe, color] = rows[i];
+                    
+                    if (!categories[category]) {
+                        categories[category] = {
+                            category: category,
+                            list: []
+                        };
+                    }
+
+                    categories[category].list.push({
+                        subject,
+                        description,
+                        activity,
+                        style,
+                        vibe,
+                        color
+                    });
+                }
+
+                // Update promptData
+                promptData.prompts = Object.values(categories);
+                displayPrompts();
+                updateCategoryDropdown();
+
+                alert('Successfully imported prompts from sheet');
+            } catch (error) {
+                console.error('Import error:', error);
+                alert('Error importing from sheet. Check console for details.');
+            }
+        }
+
+        // Check authentication on load
+        async function checkAuth() {
+            const mainContent = document.getElementById('mainContent');
+            const loginForm = document.getElementById('loginForm');
+
+            if (!adminKey) {
+                mainContent.style.display = 'none';
+                loginForm.style.display = 'block';
+                return false;
+            }
+
+            try {
+                const response = await fetch('/admin', {
+                    headers: {
+                        'Authorization': `Bearer ${adminKey}`
+                    }
+                });
+
+                if (response.ok) {
+                    mainContent.style.display = 'block';
+                    loginForm.style.display = 'none';
+                    loadPrompts();
+                    return true;
+                } else {
+                    throw new Error('Unauthorized');
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                mainContent.style.display = 'none';
+                loginForm.style.display = 'block';
+                return false;
+            }
+        }
+
+        async function login() {
+            const key = document.getElementById('adminKey').value;
+            if (!key) {
+                alert('Please enter admin key');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin', {
+                    headers: {
+                        'Authorization': `Bearer ${key}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Invalid admin key');
+                }
+
+                adminKey = key;
+                localStorage.setItem('adminKey', key);
+                const mainContent = document.getElementById('mainContent');
+                const loginForm = document.getElementById('loginForm');
+                mainContent.style.display = 'block';
+                loginForm.style.display = 'none';
+                loadPrompts();
+                return false; // Prevent form submission
+            } catch (error) {
+                alert('Invalid admin key');
+                localStorage.removeItem('adminKey');
+                adminKey = null;
+                return false; // Prevent form submission
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminKey');
+            adminKey = null;
+            const mainContent = document.getElementById('mainContent');
+            const loginForm = document.getElementById('loginForm');
+            mainContent.style.display = 'none';
+            loginForm.style.display = 'block';
+            // Clear the form
+            document.getElementById('adminKey').value = '';
+            updateAuthButton();
+        }
+
+        // Load prompts when page loads
+        async function loadPrompts() {
+            try {
+                const response = await fetch('/data/fixed-prompts.json');
+                promptData = await response.json();
+                displayPrompts();
+                updateCategoryDropdown();
+            } catch (error) {
+                console.error('Error loading prompts:', error);
+            }
+        }
+
+        function displayPrompts() {
+            const container = document.getElementById('promptList');
+            container.innerHTML = '';
+
+            promptData.prompts.forEach((category, categoryIndex) => {
+                const categoryElement = document.createElement('div');
+                categoryElement.innerHTML = `<h3>${category.category}</h3>`;
+                
+                category.list.forEach((prompt, promptIndex) => {
+                    const promptElement = document.createElement('div');
+                    promptElement.className = 'prompt-item';
+                    promptElement.innerHTML = `
+                        <strong>Subject:</strong> ${prompt.subject}<br>
+                        <strong>Description:</strong> ${prompt.description}<br>
+                        <strong>Activity:</strong> ${prompt.activity}<br>
+                        <strong>Style:</strong> ${prompt.style}<br>
+                        <strong>Vibe:</strong> ${prompt.vibe}<br>
+                        <strong>Color:</strong> ${prompt.color}<br>
+                        <div class="button-group">
+                            <button onclick="editPrompt(${categoryIndex}, ${promptIndex})">Edit</button>
+                            <button class="delete-btn" onclick="deletePrompt(${categoryIndex}, ${promptIndex})">Delete</button>
+                        </div>
+                    `;
+                    categoryElement.appendChild(promptElement);
+                });
+                
+                container.appendChild(categoryElement);
+            });
+        }
+
+        function updateCategoryDropdown() {
+            const select = document.getElementById('category');
+            const existingCategories = promptData.prompts.map(cat => cat.category);
+            
+            // Clear existing options except the last one (Add New)
+            while (select.options.length > 1) {
+                select.remove(0);
+            }
+            
+            // Add existing categories
+            existingCategories.forEach(category => {
+                const option = new Option(category, category);
+                select.add(option, select.options.length - 1);
+            });
+        }
+
+        function addPrompt() {
+            const form = document.getElementById('promptForm');
+            const category = document.getElementById('category').value;
+            
+            if (category === 'new') {
+                const newCategory = prompt('Enter new category name:');
+                if (!newCategory) return;
+                
+                promptData.prompts.push({
+                    category: newCategory,
+                    list: []
+                });
+                updateCategoryDropdown();
+                document.getElementById('category').value = newCategory;
+            }
+
+            const newPrompt = {
+                subject: document.getElementById('subject').value,
+                description: document.getElementById('description').value,
+                activity: document.getElementById('activity').value,
+                style: document.getElementById('style').value,
+                vibe: document.getElementById('vibe').value,
+                color: document.getElementById('color').value
+            };
+
+            // Find or create category
+            let categoryObj = promptData.prompts.find(cat => cat.category === category);
+            if (!categoryObj) {
+                categoryObj = { category, list: [] };
+                promptData.prompts.push(categoryObj);
+            }
+
+            categoryObj.list.push(newPrompt);
+            displayPrompts();
+            form.reset();
+        }
+
+        function editPrompt(categoryIndex, promptIndex) {
+            const prompt = promptData.prompts[categoryIndex].list[promptIndex];
+            
+            document.getElementById('category').value = promptData.prompts[categoryIndex].category;
+            document.getElementById('subject').value = prompt.subject;
+            document.getElementById('description').value = prompt.description;
+            document.getElementById('activity').value = prompt.activity;
+            document.getElementById('style').value = prompt.style;
+            document.getElementById('vibe').value = prompt.vibe;
+            document.getElementById('color').value = prompt.color;
+
+            // Remove the old prompt
+            deletePrompt(categoryIndex, promptIndex);
+        }
+
+        function deletePrompt(categoryIndex, promptIndex) {
+            if (confirm('Are you sure you want to delete this prompt?')) {
+                promptData.prompts[categoryIndex].list.splice(promptIndex, 1);
+                
+                // Remove category if empty
+                if (promptData.prompts[categoryIndex].list.length === 0) {
+                    promptData.prompts.splice(categoryIndex, 1);
+                    updateCategoryDropdown();
+                }
+                
+                displayPrompts();
+            }
+        }
+
+        async function saveChanges() {
+            try {
+                promptData.lastUpdated = new Date().toISOString().split('T')[0];
+                
+                const response = await fetch('/api/save-prompts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminKey}`
+                    },
+                    body: JSON.stringify(promptData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to save changes');
+                }
+
+                alert('Changes saved successfully!');
+            } catch (error) {
+                console.error('Error saving prompts:', error);
+                if (error.message === 'Unauthorized') {
+                    alert('Session expired. Please login again.');
+                    logout();
+                } else {
+                    alert('Error saving changes: ' + error.message);
+                }
+            }
+        }
+
+        // Update button text based on auth state
+        function updateAuthButton() {
+            const button = document.getElementById('authButton');
+            if (adminKey) {
+                button.textContent = 'Logout';
+                button.classList.add('logged-in');
+            } else {
+                button.textContent = 'Login';
+                button.classList.remove('logged-in');
+            }
+        }
+
+        function handleAuth() {
+            if (adminKey) {
+                logout();
+            } else {
+                const mainContent = document.getElementById('mainContent');
+                const loginForm = document.getElementById('loginForm');
+                mainContent.style.display = 'none';
+                loginForm.style.display = 'block';
+            }
+            updateAuthButton();
+        }
+
+        // Initialize
+        initGoogleAPI();
+        checkAuth();
+        updateAuthButton();
+    </script>
+</body>
+</html>
