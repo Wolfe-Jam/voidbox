@@ -1,9 +1,3 @@
-
-## [v1.1.2] - 2024-12-29
-
-### Changes
-- Added automated backup, changelog, and version validation features
-
 # Changelog
 
 All notable changes to the Voidbox project will be documented in this file.
