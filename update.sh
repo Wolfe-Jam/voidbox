@@ -74,7 +74,7 @@ else
     COMMIT_MSG="$1"
 fi
 
-echo "🔄 Starting local update process..."
+echo "🔄 Starting update process..."
 
 # Create backup
 create_backup
@@ -106,7 +106,7 @@ echo "💾 Committing changes with message: $COMMIT_MSG"
 git commit -m "$COMMIT_MSG"
 
 # Push to local repository
-echo "⬆️  Pushing to local repository..."
+echo "⬆️  Pushing to repository..."
 git push origin main
 
 echo "✅ Update complete!"
