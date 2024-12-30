@@ -90,46 +90,12 @@ async function generateImage(withBackground = false) {
 }
 
 /**
- * Displays an image either in the main result area or in a modal preview
- * @param {string} imageUrl - URL of the image to display
- * @param {boolean} isPreview - If true, shows in modal; if false, shows in main area
+ * Opens image in new tab (view) or displays in result area
  */
 function displayImage(imageUrl, isPreview = false) {
-    const result = document.getElementById('result');
-    if (isPreview) {
-        // Modal view for "View" button clicks
-        const modalView = document.createElement('div');
-        modalView.className = 'modal-view';
-        
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'modal-close';
-        closeBtn.innerHTML = '×';
-        closeBtn.onclick = () => {
-            modalView.remove();
-            isGenerating = false; // Reset generating state
-        };
-        
-        modalView.appendChild(img);
-        modalView.appendChild(closeBtn);
-        document.body.appendChild(modalView);
-        
-        // Prevent default save-as behavior on mobile
-        img.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-        });
-        
-        // Close on background click
-        modalView.addEventListener('click', (e) => {
-            if (e.target === modalView) {
-                modalView.remove();
-                isGenerating = false; // Reset generating state
-            }
-        });
-    } else {
-        // Normal display in the result area
+    if (isPreview) window.open(imageUrl, '_blank');
+    else {
+        const result = document.getElementById('result');
         if (result) {
             result.innerHTML = `<img src="${imageUrl}" alt="Generated image">`;
             addCloseButton();
@@ -138,19 +104,169 @@ function displayImage(imageUrl, isPreview = false) {
 }
 
 /**
- * Downloads the generated image with a timestamped filename
- * @param {string} imageUrl - URL of the image to download
+ * Forces file download instead of opening in browser
  */
 function downloadImage(imageUrl) {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-    link.download = `Void-Box-${timestamp}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    fetch(imageUrl)
+        .then(response => response.blob())
+        .then(blob => {
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:T]/g, '-').split('.')[0];
+            
+            link.href = blobUrl;
+            link.download = `Void-Box-${timestamp}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch(error => {
+            console.error('Error downloading image:', error);
+            showNotification('Failed to download image', true);
+        });
 }
+
+/**
+ * Sends image via email using Make.com webhook
+ */
+async function sendEmail(imageUrl, email) {
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.top = '120px';
+        notification.style.left = '50%';
+        notification.style.transform = 'translateX(-50%)';
+        notification.style.backgroundColor = '#f44336';
+        notification.style.color = '#ffffff';
+        notification.style.padding = '12px 24px';
+        notification.style.borderRadius = '4px';
+        notification.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+        notification.style.fontSize = '16px';
+        notification.style.fontWeight = '500';
+        notification.style.zIndex = '1000';
+        notification.textContent = 'Please enter a valid email address';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+        return;
+    }
+
+    try {
+        const response = await fetch('https://hook.us1.make.com/ge2xit3rtum5nvk1vfmbu89z5p9um54e', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl, email })
+        });
+        
+        if (response.ok) {
+            // Clear and close form first
+            const emailForm = document.querySelector('.email-form');
+            const emailInput = document.getElementById('email-input');
+            emailForm.classList.remove('active');
+            emailInput.value = '';
+            document.getElementById('email-container').style.display = 'none';
+            
+            // Success notification (green)
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.top = '120px';
+            notification.style.left = '50%';
+            notification.style.transform = 'translateX(-50%)';
+            notification.style.backgroundColor = '#4caf50';
+            notification.style.color = '#ffffff';
+            notification.style.padding = '12px 24px';
+            notification.style.borderRadius = '4px';
+            notification.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+            notification.style.fontSize = '16px';
+            notification.style.fontWeight = '500';
+            notification.style.zIndex = '1000';
+            notification.textContent = 'Email sent successfully!';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        } else {
+            throw new Error('Failed to send email');
+        }
+    } catch (error) {
+        console.error('Error sending email:', error);
+        // Error notification (red)
+        const notification = document.createElement('div');
+        notification.style.position = 'fixed';
+        notification.style.top = '120px';
+        notification.style.left = '50%';
+        notification.style.transform = 'translateX(-50%)';
+        notification.style.backgroundColor = '#f44336';
+        notification.style.color = '#ffffff';
+        notification.style.padding = '12px 24px';
+        notification.style.borderRadius = '4px';
+        notification.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+        notification.style.fontSize = '16px';
+        notification.style.fontWeight = '500';
+        notification.style.zIndex = '1000';
+        notification.textContent = 'Failed to send email';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+    }
+}
+
+// Email form handling
+document.addEventListener('DOMContentLoaded', () => {
+    const emailButton = document.getElementById('email-button');
+    const emailContainer = document.getElementById('email-container');
+    const emailForm = document.querySelector('.email-form');
+    const emailInput = document.getElementById('email-input');
+    const closeEmailButton = document.getElementById('close-email');
+    
+    // Show email form
+    emailButton?.addEventListener('click', () => {
+        emailContainer.style.display = 'block';
+        emailForm.classList.add('active');
+        emailInput?.focus();
+    });
+    
+    // Close email form
+    closeEmailButton?.addEventListener('click', () => {
+        emailContainer.style.display = 'none';
+        emailForm.classList.remove('active');
+        emailInput.value = '';
+    });
+    
+    // Send on Enter
+    emailInput?.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+            const email = emailInput.value.trim();
+            const imageUrl = document.querySelector('#result img')?.src;
+            if (email && imageUrl) {
+                await sendEmail(imageUrl, email);
+            }
+        }
+    });
+    
+    // Send on button click
+    document.getElementById('send-email')?.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        const imageUrl = document.querySelector('#result img')?.src;
+        if (email && imageUrl) {
+            await sendEmail(imageUrl, email);
+        }
+    });
+});
 
 /**
  * Shows the email sharing form and handles the email submission
@@ -163,28 +279,6 @@ function showEmailForm(imageUrl) {
         const emailInput = document.getElementById('email-input');
         if (emailInput) {
             emailInput.focus();
-        }
-
-        const sendEmailButton = document.getElementById('send-email');
-        if (sendEmailButton) {
-            sendEmailButton.onclick = async () => {
-                const email = emailInput.value;
-                const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-                
-                if (!emailRegex.test(email)) {
-                    showNotification('Please enter a valid email address', true);
-                    return;
-                }
-
-                try {
-                    // Here you would typically send the email
-                    showNotification('Email sent successfully!');
-                    emailContainer.style.display = 'none';
-                    emailInput.value = '';
-                } catch (error) {
-                    showNotification('Failed to send email', true);
-                }
-            };
         }
     }
 }
@@ -221,12 +315,15 @@ function addCloseButton() {
  */
 function showNotification(message, isError = false) {
     const notification = document.createElement('div');
-    notification.className = `notification ${isError ? 'error' : 'success'}`;
+    notification.className = `notification${isError ? ' error' : ''}`;
     notification.textContent = message;
     document.body.appendChild(notification);
+
+    // Remove after 2 seconds
     setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        notification.classList.add('fade-out');
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 2000);
 }
 
 /**
@@ -314,13 +411,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateBtn = document.getElementById('generate-btn');
     const withbgBtn = document.getElementById('withbg-btn');
     const luckyBtn = document.getElementById('lucky-btn');
-    const actionButtons = document.querySelectorAll('.action-button');
 
     // Set up generation buttons
     if (generateBtn) {
         generateBtn.addEventListener('click', () => {
             if (!isGenerating) {
-                generateImage(false);
+                generateImage(false);  // ZBG - no background
             }
         });
     }
@@ -328,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (withbgBtn) {
         withbgBtn.addEventListener('click', () => {
             if (!isGenerating) {
-                generateImage(true);
+                generateImage(true);  // BG - with background
             }
         });
     }
@@ -337,32 +433,43 @@ document.addEventListener('DOMContentLoaded', () => {
         luckyBtn.addEventListener('click', () => {
             if (!isGenerating) {
                 searchInput.value = getApprovedPrompt();
-                generateImage(false);
+                generateImage(false);  // ZBG for random prompts
             }
         });
     }
 
-    // Set up action buttons
-    actionButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const action = button.getAttribute('data-action');
+    // Set up action buttons directly
+    const viewButton = document.getElementById('view-button');
+    const downloadButton = document.getElementById('download-button');
+    const emailButton = document.getElementById('email-button');
+
+    if (viewButton) {
+        viewButton.addEventListener('click', () => {
+            console.log('View button clicked directly');
             const imageUrl = document.querySelector('#result img')?.src;
-            
             if (imageUrl) {
-                switch(action) {
-                    case 'view':
-                        displayImage(imageUrl, true);
-                        break;
-                    case 'download':
-                        downloadImage(imageUrl);
-                        break;
-                    case 'email':
-                        showEmailForm(imageUrl);
-                        break;
-                }
+                displayImage(imageUrl, true);
             }
         });
-    });
+    }
+
+    if (downloadButton) {
+        downloadButton.addEventListener('click', () => {
+            const imageUrl = document.querySelector('#result img')?.src;
+            if (imageUrl) {
+                downloadImage(imageUrl);
+            }
+        });
+    }
+
+    if (emailButton) {
+        emailButton.addEventListener('click', () => {
+            const imageUrl = document.querySelector('#result img')?.src;
+            if (imageUrl) {
+                showEmailForm(imageUrl);
+            }
+        });
+    }
 
     // Set up search input
     if (searchInput) {

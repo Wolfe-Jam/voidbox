@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1976d2">
+    <meta name="theme-color" content="#29DCF3">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
@@ -18,31 +18,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <style>
         :root {
-            --primary-color: #1976d2;
-            --hover-color: #1557b0;
-            --bg-color: #ffffff;
-            --text-color: #202124;
-            --border-color: #dfe1e5;
-            --shadow-color: rgba(32, 33, 36, 0.28);
-            --hover-bg: #f8f9fa;
-            --button-bg: #f8f9fa;
-            --button-hover: #f1f3f4;
+            --primary-color: #29DCF3;
+            --hover-color: #1bc8df;
+            --bg-color: #f5f7fa;  /* Soft blue-gray white */
+            --text-color: #2c3e50;  /* Softer than pure black */
+            --border-color: #e1e8ef;  /* Subtle border */
+            --shadow-color: rgba(44, 62, 80, 0.15);
+            --hover-bg: #edf2f7;  /* Slightly darker than bg */
+            --button-bg: #f8fafc;  /* Slightly lighter than bg */
+            --button-hover: #e2e8f0;
             --icon-filter: none;
-            --placeholder-color: rgba(25, 118, 210, 0.6);
-            --input-bg: #f8f9fa;
+            --placeholder-color: rgba(41, 220, 243, 0.6);
+            --input-bg: #ffffff;  /* Keep input white for contrast */
+            --surface-color: #ffffff;  /* Keep surface white for contrast */
         }
 
         [data-theme="dark"] {
             --bg-color: #202124;
-            --text-color: #e8eaed;
+            --text-color: #ffffff;
             --border-color: #5f6368;
             --shadow-color: rgba(0, 0, 0, 0.3);
             --hover-bg: #303134;
             --button-bg: #303134;
             --button-hover: #3c4043;
             --icon-filter: invert(1);
-            --placeholder-color: rgba(66, 165, 245, 0.6);
+            --placeholder-color: rgba(41, 220, 243, 0.6);
             --input-bg: #303134;
+            --surface-color: #202124;
         }
 
         body {
@@ -188,11 +190,11 @@
 
         .search-input:focus {
             outline: none;
-            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.4);
+            box-shadow: 0 0 0 2px rgba(41, 220, 243, 0.3);
         }
 
         [data-theme="dark"] .search-input:focus {
-            box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.4);
+            box-shadow: 0 0 0 2px rgba(41, 220, 243, 0.4);
         }
 
         .search-input:not(:focus) {
@@ -204,43 +206,43 @@
         }
 
         #search-input::-webkit-input-placeholder {
-            color: rgba(25, 118, 210, 0.6) !important;
+            color: rgba(41, 220, 243, 0.6) !important;
         }
         #search-input::-moz-placeholder {
-            color: rgba(25, 118, 210, 0.6) !important;
+            color: rgba(41, 220, 243, 0.6) !important;
         }
         #search-input:-ms-input-placeholder {
-            color: rgba(25, 118, 210, 0.6) !important;
+            color: rgba(41, 220, 243, 0.6) !important;
         }
         
         [data-theme="dark"] #search-input::-webkit-input-placeholder {
-            color: rgba(66, 165, 245, 0.6) !important;
+            color: rgba(41, 220, 243, 0.6) !important;
         }
         [data-theme="dark"] #search-input::-moz-placeholder {
-            color: rgba(66, 165, 245, 0.6) !important;
+            color: rgba(41, 220, 243, 0.6) !important;
         }
         [data-theme="dark"] #search-input:-ms-input-placeholder {
-            color: rgba(66, 165, 245, 0.6) !important;
+            color: rgba(41, 220, 243, 0.6) !important;
         }
 
         .search-input::selection {
-            background-color: rgba(25, 118, 210, 0.3);
+            background-color: rgba(41, 220, 243, 0.3);
             color: var(--text-color);
         }
 
         [data-theme="dark"] .search-input::selection {
-            background-color: rgba(66, 165, 245, 0.3);
+            background-color: rgba(41, 220, 243, 0.3);
             color: var(--text-color);
         }
 
         /* For Firefox */
         .search-input::-moz-selection {
-            background-color: rgba(25, 118, 210, 0.3);
+            background-color: rgba(41, 220, 243, 0.3);
             color: var(--text-color);
         }
 
         [data-theme="dark"] .search-input::-moz-selection {
-            background-color: rgba(66, 165, 245, 0.3);
+            background-color: rgba(41, 220, 243, 0.3);
             color: var(--text-color);
         }
 
@@ -303,37 +305,48 @@
             opacity: 0.5;
         }
 
-        .button {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
+        .buttons {
+            display: flex;
+            gap: 12px;
             justify-content: center;
+            margin: 20px 0;
+        }
+
+        .button {
+            padding: 10px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
             background: var(--button-bg);
             color: var(--text-color);
-            border: 1px solid transparent;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            min-width: 120px;
-            text-align: center;
-            white-space: nowrap;
-            min-height: 44px;
-            min-width: 44px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
 
         .button:hover {
-            box-shadow: 0 1px 3px var(--shadow-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+            border-color: var(--primary-color);
             background: var(--button-hover);
-            border-color: var(--border-color);
         }
 
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 24px;
+        .button:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px var(--shadow-color);
+        }
+
+        /* Dark mode specific button styles */
+        [data-theme="dark"] .button {
+            background: #3c4043;
+            border-color: #5f6368;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .button:hover {
+            background: #4a4f54;
+            border-color: var(--primary-color);
         }
 
         .result-container {
@@ -350,6 +363,19 @@
             margin: 20px auto;
             max-width: 800px;
             text-align: center;
+            border: 2px solid var(--border-color);
+            background-color: var(--surface-color);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            max-width: 512px;
+        }
+
+        [data-theme="dark"] #result {
+            border: 2px solid #000000;
+            background-color: #000000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         #result img {
@@ -804,43 +830,26 @@
             opacity: 0.7;
         }
 
-        .modal-view {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg-color);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        /* Add instant tooltip styles */
+        [title] {
+            position: relative;
+            cursor: help;
         }
 
-        .modal-view img {
-            max-width: 90%;
-            max-height: 80vh;
-            object-fit: contain;
-        }
-
-        .modal-close {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--button-bg);
-            border: none;
-            color: var(--text-color);
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 6px var(--shadow-color);
-            z-index: 2001;
+        [title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -851,7 +860,7 @@
             <img src="images/logo.svg" alt="White Wolfe Logo">
         </div>
     </div>
-    <div class="version-info">v1.3.0-beta.1</div>
+    <div class="version-info">v1.3.1</div>
     <div class="main-content">
         <h1 class="page-title">Zero Background Image Generation</h1>
         
@@ -879,9 +888,9 @@
         </div>
 
         <div class="buttons">
-            <button class="button" id="generate-btn">ZBG</button>
-            <button class="button" id="withbg-btn">BG</button>
-            <button class="button" id="lucky-btn">?!?</button>
+            <button class="button" id="withbg-btn" title="Generate with Background">BG</button>
+            <button class="button" id="generate-btn" title="Generate without Background">ZBG</button>
+            <button class="button" id="lucky-btn" title="Random Prompt">?!?</button>
         </div>
 
         <div class="result-container">
@@ -913,13 +922,9 @@
                     <button id="send-email" class="email-send" title="Send">
                         <img src="images/icons/send.svg" alt="Send">
                     </button>
-                    <button id="cancel-email" class="email-cancel" title="Cancel">
-                        <img src="images/icons/close.svg" alt="Cancel">
+                    <button id="close-email" class="email-close" title="Close">
+                        <img src="images/icons/close.svg" alt="Close">
                     </button>
-                </div>
-                <div id="email-confirmation" class="email-confirmation">Email sent!</div>
-                <div class="loading-overlay">
-                    <div class="loading-spinner"></div>
                 </div>
             </div>
         </div>
