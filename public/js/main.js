@@ -51,9 +51,9 @@ async function generateImage(withBackground = false) {
     }
 
     try {
-        const response = await fetch(!withBackground ? 
-            'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2' : 
-            'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw', {
+        const response = await fetch(withBackground ? 
+            'https://hook.us1.make.com/f3d6i90kedqpcuut3y1691cs3onnjofw' : 
+            'https://hook.us1.make.com/x4gwbl1cqz789cqe23a187s411plbwo2', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -408,15 +408,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup UI elements
     const searchInput = document.getElementById('search-input');
     const clearButton = document.getElementById('clear-button');
-    const generateBtn = document.getElementById('generate-btn');
     const withbgBtn = document.getElementById('withbg-btn');
+    const generateBtn = document.getElementById('generate-btn');
     const luckyBtn = document.getElementById('lucky-btn');
 
     // Set up generation buttons
     if (generateBtn) {
         generateBtn.addEventListener('click', () => {
             if (!isGenerating) {
-                generateImage(false);  // ZBG - no background
+                generateImage(false);  // ZBG - no background (now primary button)
             }
         });
     }
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (withbgBtn) {
         withbgBtn.addEventListener('click', () => {
             if (!isGenerating) {
-                generateImage(true);  // BG - with background
+                generateImage(true);  // BG - with background (now secondary button)
             }
         });
     }

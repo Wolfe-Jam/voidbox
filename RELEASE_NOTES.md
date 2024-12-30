@@ -59,5 +59,14 @@ All core functionalities remain unchanged and protected:
 - Maintains all security features
 - Compatible with all modern browsers
 
+## v1.3.0-beta.2 (2024-12-30)
+
+### UI Changes
+- Swapped button labels to match functionality:
+  - Left button (primary): "ZBG" - Zero Background Generation
+  - Center button: "BG" - Background Generation
+  - Right button: "?!?" - Random (uses ZBG)
+- Updated button tooltips for clarity
+
 ---
 Made with ❄️ by White Wolfe Development
