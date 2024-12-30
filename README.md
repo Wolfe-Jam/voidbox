@@ -1,4 +1,5 @@
-# VoidBox - Zero Background AI Image Generator
+# VoidBox v1.3.0-beta.1
+Last Updated: December 29, 2023 21:47 EST
 
 A specialized web application for generating images with no background, perfect for design assets and creative projects.
 
