@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set version display
     const versionDisplay = document.getElementById('version-display');
     if (versionDisplay) {
-        versionDisplay.textContent = 'v1.1.1';
+        versionDisplay.textContent = 'v1.3.0-beta.1';
     }
 
     // Setup UI elements
