@@ -1,6 +1,6 @@
 # VoidBox Core Features Documentation
-Version: 1.3.0-beta.1
-Date: December 29, 2023 20:06 EST
+Version: 1.3.1
+Date: December 30, 2023 03:00 EST
 
 ## Core Functionality (PROTECTED)
 
