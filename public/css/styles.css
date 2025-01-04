@@ -3,7 +3,7 @@
     --primary-color: #29DCF3;
     --hover-color: #1bc8df;
     --bg-color: #f5f7fa;
-    --text-color: #2c3e50;
+    --text-color: #333;
     --border-color: #e1e8ef;
     --shadow-color: rgba(44, 62, 80, 0.15);
     --hover-bg: #edf2f7;
@@ -37,7 +37,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--bg-color);
     color: var(--text-color);
     min-height: 100vh;
@@ -50,16 +50,17 @@ body {
 
 /* Top Banner */
 .top-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     height: 100px;
-    background: var(--bg-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
     z-index: 1000;
     box-shadow: 0 2px 8px var(--shadow-color);
 }
@@ -82,26 +83,35 @@ body {
 
 /* Main Content */
 .main-content {
-    margin-top: 120px;
-    padding: 20px;
+    padding: 10px;
     width: 100%;
     max-width: 800px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin: 120px auto 0;
+}
+
+.main-content > * {
+    margin: 0;
+    padding: 0;
+}
+
+.main-content > *:not(:last-child) {
+    margin-bottom: 0;
 }
 
 /* Page Title */
-.page-title {
-    font-family: 'Inter', sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-    margin: 1px 0 17px 0;
-    padding: 0;
-    text-align: center;
-    text-transform: uppercase;
+.app-title {
+    font-family: 'League Spartan', sans-serif;
+    font-weight: 700;
     letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--text-color);
+    text-align: center;
+    width: 80%;
+    max-width: 480px;
+    font-size: 1.2rem;
+    margin: 0 auto 5px;
+    position: relative;
+    z-index: 2;
 }
 
 /* Search Container */
@@ -109,7 +119,15 @@ body {
     width: 100%;
     max-width: min(600px, 90vw);
     position: relative;
-    margin: 20px auto;
+    margin: 0 auto 20px;
+    z-index: 1;
+}
+
+.search-container,
+.buttons,
+.result-container {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 /* Method Dropdown */
@@ -188,13 +206,20 @@ body {
 /* Buttons */
 .buttons {
     display: flex;
-    gap: 12px;
     justify-content: center;
-    margin: 20px 0;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+    margin-top: 20px !important;
+    margin-bottom: 10px !important;
+    padding: 5px 0;
 }
 
 .button {
-    padding: 10px 24px;
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    padding: 8px 16px;
     font-size: 16px;
     font-weight: 600;
     border-radius: 8px;
@@ -204,7 +229,6 @@ body {
     color: var(--text-color);
     border: 2px solid var(--border-color);
     box-shadow: 0 2px 4px var(--shadow-color);
-    position: relative;
 }
 
 .button:hover {
@@ -218,23 +242,73 @@ body {
     box-shadow: 0 1px 2px var(--shadow-color);
 }
 
+/* Tooltip styles */
+.tooltip {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px 4px 0;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent;
+}
+
+.button:hover .tooltip {
+    opacity: 1;
+}
+
 /* Result Container */
 .result-container {
     position: relative;
-    margin: 32px auto;
+    margin: 0 auto !important;
     max-width: 512px;
     aspect-ratio: 1;
     border: 2px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--surface-color);
+    border-radius: var(--border-radius);
     overflow: hidden;
-    box-shadow: 0 4px 12px var(--shadow-color);
+    background: var(--bg-color);
+    z-index: 1;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#result {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #result img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    margin: 0;
+    padding: 0;
+    display: block;
 }
 
 /* Action Buttons */
@@ -293,29 +367,6 @@ body {
     width: 20px;
     height: 20px;
     filter: var(--icon-filter);
-}
-
-/* Tooltips */
-.tooltip {
-    position: absolute;
-    bottom: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-.action-button:hover .tooltip,
-.button:hover .tooltip {
-    opacity: 1;
 }
 
 /* Email Form */
@@ -406,6 +457,16 @@ body {
     opacity: 0.5;
 }
 
+.version-number {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: var(--text-color);
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1000;
+}
+
 /* Theme Toggle */
 .theme-toggle {
     position: fixed;
@@ -461,19 +522,35 @@ body {
     background: var(--hover-bg);
 }
 
-/* Mobile Optimizations */
-@media (max-width: 768px) {
+/* Device Breakpoints */
+@media screen and (max-width: 768px) {
+    .app-title {
+        font-size: 1rem;
+    }
+    
     .buttons {
-        flex-direction: column;
-        width: 100%;
-        gap: 8px;
+        margin-top: 5px !important;
+        margin-bottom: 5px !important;
     }
+    
+    .search-container {
+        margin: 5px auto;
+    }
+}
 
+@media screen and (max-width: 480px) {
+    .buttons {
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    
     .button {
-        width: 100%;
+        padding: 6px 12px;
+        font-size: 14px;
     }
-
+    
+    .search-container,
     .result-container {
-        max-width: 100%;
+        width: 90vw;
     }
 }

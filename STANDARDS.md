@@ -240,104 +240,92 @@ NODE_ENV=
 - Button groups with proper spacing
 - No fixed header/footer on mobile
 
-## Design System
+## Layout Standards
+
 ### Typography
-- App Title: "ZERO BACKGROUND IMAGE GENERATION"
-  - All caps
-  - Letter spacing: 0.2em
-  - Font size: 0.9em
-  - Line height: 1
-  - Single line display
-  - No wrapping
+- Primary Font: Inter (for general text)
+- Title Font: League Spartan Bold (for headings)
+- Title Text Transform: Uppercase
+- Title Letter Spacing: 0.1em
+- Title Width: 80% of container, max-width 480px
 
-### Buttons
-- Standard Height: 44px (touch-friendly)
-- Standard Padding: 12px 24px
-- Border Radius: 8px
-- Hover Effect: Electric Blue (#29DCF3)
+### Spacing Standards
+1. Top Bar
+   - Height: Fixed at top of viewport
+   - Elements: Version Number | Logo | Theme Toggle
+   - Padding: 10px 20px
 
-### Tooltips
-- Background: Black (#000)
-- Text: White (#fff)
-- Padding: 5px 10px
-- Border Radius: 4px
-- Font Size: 14px
-- Position: Below buttons
-- Transition: 0.2s ease
+2. Content Spacing
+   - Main Content Padding: 10px
+   - Title to Input: 5px (with slight overlap effect)
+   - Input to Buttons: 20px
+   - Buttons to Image: 10px
 
-### Button Labels
-- ZBG: "Zero BackGround"
-- BG: "BackGround"
-- ?!?: "Lucky Image"
-- X: "Clear"
+3. Button Layout
+   - Gap between buttons: 10px
+   - Button padding: 8px 16px
+   - Z-index layering: Buttons (z-index: 2) over containers (z-index: 1)
 
-## Mobile Standards
-- Minimum touch target: 44px
-- Minimum font size: 16px
-- Single column layout
-- No horizontal scrolling
-- Touch-friendly spacing
+### Container Standards
+1. Image Container
+   - Max-width: 512px
+   - Aspect ratio: 1:1
+   - Border: 2px solid var(--border-color)
+   - Border-radius: Matches global border-radius
+   - No internal padding
+   - Flex display for centered content
 
-## Prompt System
-- Format: Subject | Description | Activity | Style | Method | Color | Vibe
-- Example: "White Wolf | Blue eyes | staring | vintage | woodcut | flat color | magical"
-- Pipe separator required
-- All segments optional except Subject
+2. Input Container
+   - Max-width: min(600px, 90vw)
+   - Centered with auto margins
 
-### Method Options
-- Default: woodcut
-- Options: linocut, screenprint, vector
-- Position: Left-aligned dropdown
-- Dark mode compatible
+### Mobile Responsiveness
+- Breakpoint (Tablet): 768px
+  - Remove overlap effects
+  - Add 5px spacing between elements
+  - Reduce title font size to 1rem
 
-## Animations
-- Transitions: 0.2s ease
-- Loading states: Smooth fade
-- Button hover: Gentle scale
-- Modal: Fade and slide
-- Tooltips: Fade in/out
+- Breakpoint (Mobile): 480px
+  - Increase spacing to 10px
+  - Reduce button padding to 6px 12px
+  - Reduce button font size to 14px
 
-## Dark Mode
-- Background: #202124
-- Text: #ffffff
-- Borders: #5f6368
-- Buttons: #303134
-- Hover: #3c4043
+### Z-Index Hierarchy
+1. Top Bar: 1000
+2. Interactive Elements (buttons): 2
+3. Containers (input, image): 1
 
-## Components
+### Device Breakpoints and Behavior
 
-### Images
-- Lazy loading enabled
-- Alt text required
-- Download option
-- Clear action
-- Email sharing
+1. Desktop (> 768px)
+   - Full layout with overlap effects
+   - Title: 1.2rem, League Spartan Bold
+   - Button padding: 8px 16px
+   - Full spacing between elements
+   - Title width: 80% of container (max 480px)
+   - Image container: 512px max-width
+   - Input width: min(600px, 90vw)
 
-### Buttons
-- Clear hover states
-- Active state indication
-- Loading state display
-- Touch feedback
-- Tooltip integration
+2. Tablet (481px - 768px)
+   - Remove element overlaps
+   - Title: 1rem
+   - Maintain horizontal button layout
+   - Reduced margins (5px between elements)
+   - Input/Image containers scale with viewport
+   - Maintain button size and spacing
 
-### Forms
-- 16px minimum font
-- Clear validation
-- Error states
-- Loading indicators
-- Mobile keyboard friendly
+3. Mobile (≤ 480px)
+   - Stack layout vertically
+   - Title: 1rem
+   - Buttons: 
+     - Reduced padding (6px 12px)
+     - Smaller font (14px)
+     - Increased touch targets
+   - Increased spacing (10px) for better touch interaction
+   - Containers scale to 90vw
+   - Full-width inputs and buttons
 
-## Performance
-- Lazy load images
-- Optimize assets
-- Minimize reflows
-- Smooth animations
-- Progressive loading
-
-## Responsive Breakpoints
-- Mobile: 320px - 480px
-- Tablet: 481px - 768px
-- Desktop: 769px+
+Note: All transitions between breakpoints should be smooth, with no jarring layout shifts.
 
 ## Success Metrics
 - Load time < 2s
@@ -462,6 +450,38 @@ function showModal() {
    - ARIA attributes
    - Cross-browser support
    - Screen reader compatibility
+
+## Tooltip Standards
+1. Position and Layout
+   - Appears above the element
+   - Centered horizontally
+   - 25px above element
+   - Small arrow pointing down
+   - Single line only (white-space: nowrap)
+
+2. Styling
+   - Background: rgba(0, 0, 0, 0.8)
+   - Text Color: white
+   - Font: 11px Inter
+   - Padding: 3px 6px
+   - Border Radius: 3px
+   - Transition: opacity 0.2s ease
+   - Z-index: 1000
+
+3. Behavior
+   - Shows on hover
+   - Fades in/out smoothly
+   - No pointer events
+   - No text wrapping
+   - Appears instantly above element
+
+4. Arrow Indicator
+   - 4px size
+   - Same color as tooltip
+   - Centered below tooltip
+   - Points to center of element
+
+This tooltip standard should be used consistently across all interactive elements that require additional context or explanation.
 
 ## Documentation Tags
 ### Status Indicators

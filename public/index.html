@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#29DCF3">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="format-detection" content="telephone=no">
-    <link rel="apple-touch-icon" href="images/logo.svg">
-    <title>VoidBox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoidBox - Zero Background Image Generation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     
     <!-- Preload critical assets -->
     <link rel="preload" href="images/logo.svg" as="image">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@700&display=swap" as="style">
     
     <!-- Defer non-critical CSS -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <style>
         :root {
             --primary-color: #29DCF3;
@@ -879,37 +879,28 @@
 </head>
 <body>
     <div class="top-banner">
-        <button class="theme-toggle" aria-label="Toggle theme"></button>
+        <div class="version-number">v1.3.5</div>
         <div class="logo">
             <img src="images/logo.svg" alt="White Wolfe Logo">
         </div>
+        <button class="theme-toggle" aria-label="Toggle theme">
+            <span class="tooltip">Toggle Theme</span>
+        </button>
     </div>
-    <div class="version-info">v1.4.0</div>
     <div class="main-content">
-        <h1 class="page-title">Zero Background Image Generation</h1>
+        <h1 class="app-title">ZERO BACKGROUND IMAGE GENERATION</h1>
         
         <div class="search-container">
-            <div class="search-label">Describe your desired image</div>
-            <div class="search-wrapper">
-                <input 
-                    type="text"
-                    class="search-input"
-                    id="search-input"
-                    value="White Wolf, blue eyes, staring, vintage, flat color, magical"
-                    autocomplete="off"
-                    autocorrect="off"
-                    spellcheck="false"
-                    tabindex="1"
-                >
-                <button class="clear-button" id="clear-button" tabindex="3">
-                    <img src="images/icons/close.svg" alt="Clear">
-                    <span class="tooltip">Clear</span>
-                </button>
-            </div>
-            <div class="prompt-structure">
-                <strong>Subject</strong> | <strong>Description</strong> | Activity/Props | <strong>Style</strong> | Vibe | Color
-            </div>
-            <div class="search-history" id="search-history"></div>
+            <input 
+                type="text"
+                class="search-input"
+                id="search-input"
+                placeholder="Enter your prompt here..."
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                tabindex="1"
+            >
         </div>
 
         <div class="buttons">
