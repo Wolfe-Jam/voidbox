@@ -298,7 +298,10 @@ function addCloseButton() {
 
     const closeButton = document.createElement('button');
     closeButton.className = 'close-button';
-    closeButton.innerHTML = '×';
+    closeButton.innerHTML = `
+        <span style="line-height: 1;">×</span>
+        <span class="tooltip">Close</span>
+    `;
     
     closeButton.addEventListener('click', () => {
         resultContainer.innerHTML = '';
