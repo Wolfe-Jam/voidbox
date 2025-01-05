@@ -12,3 +12,14 @@
   - Implemented consistent styling
   - Added arrow indicators
   - Improved readability with single-line display
+
+## Version 1.4.0 (2025-01-04)
+### Features
+- Added woodblock style to all default prompts
+- Refined email functionality design and positioning
+- Adjusted title styling and spacing
+- Fixed email form button icons to stay white
+- Improved placeholder text visibility in light mode
+
+### Stability
+- Core functions and features all operating smoothly

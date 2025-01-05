@@ -1,8 +1,14 @@
 // Constants
 const APPROVED_PROMPTS = [
-    "White Wolf, blue eyes, staring, vintage, flat color, magical",
-    "White Wolf, mystical aura, glowing eyes, ethereal, minimalist",
+    "White Wolf, blue eyes, staring, vintage, flat color, magical, woodblock",
+    "American Bulldog, kind eyes, standing, vintage, flat color, patriotic, woodblock",
+    "Black Cat, olive eyes, poppies, vintage, flat color, peaceful, woodblock",
+    "Racoon, grin, vintage, flat color, funny, woodblock",
+    "Sloth, floating on a water tube, pop art, flat color, cute, woodblock"
 ];
+
+// Default prompt
+const DEFAULT_PROMPT = "White Wolf, blue eyes, staring, vintage, flat color, magical, woodblock";
 
 // State management
 let isGenerating = false;
@@ -444,27 +450,32 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingOverlay.style.display = 'none';
         }
     });
+
+    // Run default prompt on page load
+    const promptInput = document.getElementById('search-input');
+    if (promptInput) {
+        promptInput.value = DEFAULT_PROMPT;
+        // Trigger ZBG generation
+        document.getElementById('generate-btn').click();
+    }
 });
 
 // Email form handling
 document.addEventListener('DOMContentLoaded', () => {
     const emailButton = document.getElementById('email-button');
     const emailContainer = document.getElementById('email-container');
-    const emailForm = document.querySelector('.email-form');
     const emailInput = document.getElementById('email-input');
     const closeEmailButton = document.getElementById('close-email');
     
     // Show email form
     emailButton?.addEventListener('click', () => {
-        emailContainer.style.display = 'block';
-        emailForm.classList.add('active');
+        emailContainer.style.display = 'flex';
         emailInput?.focus();
     });
     
     // Close email form
     closeEmailButton?.addEventListener('click', () => {
         emailContainer.style.display = 'none';
-        emailForm.classList.remove('active');
         emailInput.value = '';
     });
     
@@ -475,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageUrl = document.querySelector('#result img')?.src;
             if (email && imageUrl) {
                 await sendEmail(imageUrl, email);
+                emailContainer.style.display = 'none';
             }
         }
     });
@@ -485,6 +497,62 @@ document.addEventListener('DOMContentLoaded', () => {
         const imageUrl = document.querySelector('#result img')?.src;
         if (email && imageUrl) {
             await sendEmail(imageUrl, email);
+            emailContainer.style.display = 'none';
         }
     });
+});
+
+// Email functionality
+document.getElementById('email-button').addEventListener('click', () => {
+    const emailForm = document.querySelector('.email-form');
+    const emailInput = document.getElementById('email-input');
+    
+    // Show email form
+    emailForm.classList.add('show');
+    emailInput.focus();
+});
+
+document.getElementById('close-email').addEventListener('click', () => {
+    const emailForm = document.querySelector('.email-form');
+    emailForm.classList.remove('show');
+});
+
+document.getElementById('send-email').addEventListener('click', async () => {
+    const emailInput = document.getElementById('email-input');
+    const email = emailInput.value.trim();
+    
+    if (!email || !email.includes('@')) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    const currentImage = document.querySelector('#result img');
+    if (!currentImage) {
+        showNotification('No image to send', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                imageUrl: currentImage.src
+            })
+        });
+        
+        if (response.ok) {
+            showNotification('Email sent successfully!', 'success');
+            document.querySelector('.email-form').classList.remove('show');
+            emailInput.value = '';
+        } else {
+            throw new Error('Failed to send email');
+        }
+    } catch (error) {
+        showNotification('Failed to send email', 'error');
+        console.error('Email error:', error);
+    }
 });

@@ -6,16 +6,16 @@
     <title>VoidBox - Zero Background Image Generation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     
     <!-- Preload critical assets -->
     <link rel="preload" href="images/logo.svg" as="image">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@400;700&display=swap" as="style">
     
     <!-- Defer non-critical CSS -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=League+Spartan:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <style>
         :root {
             --primary-color: #29DCF3;
@@ -548,6 +548,8 @@
             border-top: 3px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin: 30px auto;
+            transform-origin: center center;
         }
 
         @keyframes spin {
@@ -879,7 +881,7 @@
 </head>
 <body>
     <div class="top-banner">
-        <div class="version-number">v1.3.5</div>
+        <div class="version-number">v1.4.0</div>
         <div class="logo">
             <img src="images/logo.svg" alt="White Wolfe Logo">
         </div>
@@ -918,40 +920,37 @@
             </button>
         </div>
 
+        <div id="email-container">
+            <div class="email-form">
+                <input type="email" id="email-input" class="email-input" placeholder="Enter email address">
+                <button id="send-email" class="action-button">
+                    <img src="images/icons/send.svg" alt="Send">
+                    <span class="tooltip">Send</span>
+                </button>
+                <button id="close-email" class="action-button">
+                    <img src="images/icons/close.svg" alt="Close">
+                    <span class="tooltip">Close</span>
+                </button>
+            </div>
+        </div>
+
         <div class="result-container">
             <div id="result">
-                <img src="https://cdn.leonardo.ai/users/ee52994c-c21f-4c7f-960d-cfe74a0c176c/generations/23ef8b3c-4897-4389-8f1d-e73788e6363d/AlbedoBase_XL_White_Wolf_blue_eyes_staring_vintage_flat_color_0.png" 
-                     alt="White Wolf - Zero Background AI Generation">
+                <img src="images/placeholder.png" alt="Generated Image">
             </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons" id="action-buttons">
-                <button class="action-button" id="view-button" data-action="view">
+            <div class="image-actions">
+                <button class="action-button" id="view-button">
                     <img src="images/icons/view.svg" alt="View">
                     <span class="tooltip">View full size</span>
                 </button>
-                <button class="action-button" id="download-button" data-action="download">
+                <button class="action-button" id="download-button">
                     <img src="images/icons/download.svg" alt="Download">
                     <span class="tooltip">Download image</span>
                 </button>
-                <button class="action-button" id="email-button" data-action="email">
+                <button class="action-button" id="email-button">
                     <img src="images/icons/email.svg" alt="Email">
                     <span class="tooltip">Email image</span>
                 </button>
-            </div>
-
-            <!-- Email Container -->
-            <div id="email-container">
-                <div class="email-form">
-                    <input type="email" id="email-input" class="email-input" placeholder="Email this image">
-                    <button id="send-email" class="email-send" title="Send">
-                        <img src="images/icons/send.svg" alt="Send">
-                    </button>
-                    <button id="close-email" class="email-close">
-                        <img src="images/icons/close.svg" alt="Close">
-                        <span class="tooltip">Close</span>
-                    </button>
-                </div>
             </div>
         </div>
         
